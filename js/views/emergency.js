@@ -13,172 +13,107 @@ const EmergencyView = {
     const sortedGates = [...gates].sort((a, b) => a.waitMinutes - b.waitMinutes);
 
     container.innerHTML = `
-      <div class="animate-fade-in-up" style="margin-bottom: 20px;">
-        <h1 style="font-size: var(--text-xl); font-weight: var(--font-extrabold); letter-spacing: -0.02em; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          Emergency & Safety
-        </h1>
-        <p style="font-size: var(--text-sm); color: var(--text-tertiary);">Stay safe at ${Config.venue.name}</p>
-      </div>
-
-      <!-- SOS Button -->
-      <div class="text-center animate-scale-in" style="margin-bottom: 28px; animation-delay: 80ms;">
-        <button class="btn" id="btn-sos" style="
-          width: 110px; height: 110px; border-radius: 50%;
-          background: radial-gradient(circle at 30% 30%, rgba(248,113,113,0.9), rgba(220,38,38,0.95));
-          color: white; flex-direction: column; gap: 4px;
-          margin: 0 auto; display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 0 30px rgba(248,113,113,0.3), 0 0 60px rgba(248,113,113,0.15), inset 0 1px 0 rgba(255,255,255,0.2);
-          border: 2px solid rgba(248,113,113,0.4);
-          position: relative; overflow: visible;
-          animation: sos-breathe 2s ease-in-out infinite;
-        " aria-label="Send SOS emergency alert">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.1em;">SOS</span>
-        </button>
-        <p style="font-size: 10px; color: var(--text-tertiary); margin-top: 12px;">Tap for emergency assistance</p>
-      </div>
-
-      <!-- Your Location -->
-      <div class="card card-compact animate-fade-in-up" style="border-left: 3px solid var(--accent-blue); margin-bottom: 16px; animation-delay: 160ms;">
-        <div class="flex-row" style="gap: 12px;">
-          <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: var(--accent-blue-dim); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue-light)" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <div class="relative min-h-screen pt-24 pb-32 px-4 sm:px-6 w-full max-w-md mx-auto space-y-6 flex flex-col">
+        <!-- Header -->
+        <div class="glass-cyber rounded-[2.5rem] p-6 border-red-500/20 text-center animate-fade-in-up">
+          <div class="inline-flex items-center gap-2 bg-red-500/20 text-red-500 border border-red-500/30 px-3 py-1 rounded-full mb-4 shadow-[0_0_10px_rgba(239,68,68,0.2)]">
+            <span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse shadow-[0_0_5px_#EF4444]"></span>
+            <span class="font-black text-[9px] uppercase tracking-[0.2em] font-headline">CRITICAL_NODE</span>
           </div>
-          <div>
-            <div class="font-semibold text-sm">Your Location</div>
-            <div style="font-size: var(--text-sm); color: var(--text-secondary); margin-top: 2px;">${Format.seat(seat.section, seat.row, seat.seat)}</div>
-            <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 2px;">Lower Bowl · ${Config.venue.name}</div>
+          <h1 class="text-3xl font-black italic tracking-tighter uppercase font-headline text-white">SAFETY<span class="text-red-500 text-neon-cyan drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]">_PROTOCOLS</span></h1>
+          <p class="text-zinc-500 text-[10px] font-bold tracking-widest uppercase mt-2">EMERGENCY ASSISTANCE</p>
+        </div>
+
+        <!-- Big SOS Button -->
+        <div class="flex justify-center py-6 animate-scale-in" style="animation-delay: 80ms;">
+          <button class="relative w-40 h-40 rounded-full bg-red-500 bg-gradient-to-tr from-red-600 to-red-400 flex flex-col items-center justify-center p-0 cursor-pointer shadow-[0_0_40px_rgba(239,68,68,0.4),inset_0_4px_10px_rgba(255,255,255,0.4)] border-4 border-black group active:scale-90 transition-transform overflow-hidden" id="btn-sos" aria-label="Send SOS emergency alert">
+            <div class="absolute inset-0 rounded-full border border-white/30 group-hover:scale-110 transition-transform duration-500"></div>
+            <div class="absolute -inset-4 rounded-full border border-red-500/30 animate-ping"></div>
+            <span class="material-symbols-outlined text-white text-5xl mb-1 filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" style="font-variation-settings: 'FILL' 1;">emergency</span>
+            <span class="font-headline font-black text-white text-3xl tracking-widest leading-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">SOS</span>
+          </button>
+        </div>
+
+        <!-- Location Node -->
+        <div class="animate-fade-in-up" style="animation-delay: 160ms;">
+          <div class="flex justify-between items-end mb-4 px-2">
+            <h3 class="font-headline font-black text-lg tracking-tight uppercase italic flex items-center gap-2">
+              <span class="material-symbols-outlined text-blue-500" style="font-variation-settings: 'FILL' 1;">my_location</span>
+              YOUR_LOCATION
+            </h3>
+            <span class="text-blue-500 font-bold text-[9px] tracking-widest uppercase border border-blue-500/30 px-2 py-0.5 rounded px-2 bg-blue-500/10">GPS_LOCKED</span>
           </div>
-        </div>
-      </div>
-
-      <!-- Emergency Contacts -->
-      <div class="section animate-fade-in-up" style="animation-delay: 240ms;">
-        <div class="section-header">
-          <span class="section-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline;vertical-align:-2px;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/></svg>
-            EMERGENCY CONTACTS
-          </span>
-        </div>
-        <div class="flex-col gap-2">
-          ${emergency.contacts.map((contact, i) => `
-            <a href="tel:${contact.number}" class="card card-compact flex-row" style="gap: 12px; text-decoration: none; color: inherit; animation-delay: ${(i+1)*60}ms;" id="emergency-contact-${i}">
-              <div style="
-                width: 42px; height: 42px; border-radius: var(--radius-lg);
-                background: ${contact.icon === '🚑' ? 'linear-gradient(135deg, rgba(248,113,113,0.15), rgba(220,38,38,0.1))' : contact.icon === '🛡️' ? 'linear-gradient(135deg, rgba(79,142,255,0.15), rgba(34,211,238,0.1))' : 'linear-gradient(135deg, rgba(167,139,250,0.15), rgba(99,102,241,0.1))'};
-                display: flex; align-items: center; justify-content: center; font-size: var(--text-lg); flex-shrink: 0;
-              ">${contact.icon}</div>
-              <div style="flex: 1;">
-                <div class="font-semibold" style="font-size: var(--text-sm);">${contact.name}</div>
-                <div class="font-mono" style="font-size: 11px; color: var(--text-tertiary);">${contact.number}</div>
+          <div class="glass-cyber rounded-2xl p-4 border-blue-500/20 bg-blue-500/5">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-black border border-blue-500/30 flex items-center justify-center text-blue-500 shrink-0">
+                <span class="material-symbols-outlined text-xl">satellite_alt</span>
               </div>
-              <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: var(--success-dim); display: flex; align-items: center; justify-content: center;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/></svg>
+              <div>
+                <p class="font-black text-white text-lg uppercase tracking-tight">${Format.seat(seat.section, seat.row, seat.seat)}</p>
+                <p class="text-zinc-400 text-[10px] font-bold tracking-widest uppercase">LOWER SECTOR // ${Config.venue.name}</p>
               </div>
-            </a>
-          `).join('')}
-        </div>
-      </div>
-
-      <!-- Nearest Exits -->
-      <div class="section animate-fade-in-up" style="animation-delay: 320ms;">
-        <div class="section-header">
-          <span class="section-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline;vertical-align:-2px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            NEAREST EXITS
-          </span>
-        </div>
-        <div class="flex-col gap-2">
-          ${sortedGates.map((gate, i) => {
-            const status = Format.waitStatus(gate.waitMinutes);
-            const poiData = Config.pois.find(p => p.id === gate.id);
-            return `
-              <div class="card card-compact flex-row" style="gap: 12px; cursor: pointer;" ${poiData ? `data-navigate-lat="${poiData.lat}" data-navigate-lng="${poiData.lng}"` : ''}>
-                <div style="width: 42px; height: 42px; border-radius: var(--radius-lg); background: linear-gradient(135deg, rgba(79,142,255,0.15), rgba(34,211,238,0.1)); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue-light)" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                </div>
-                <div style="flex: 1;">
-                  <div class="font-semibold" style="font-size: var(--text-sm);">${gate.name}</div>
-                  <div class="flex-row" style="gap: 8px; margin-top: 3px;">
-                    <div style="width: 6px; height: 6px; border-radius: 50%; background: var(--${status}); box-shadow: 0 0 6px var(--${status});"></div>
-                    <span style="font-size: 10px; color: var(--${status});">${gate.waitMinutes} min wait</span>
-                    <span style="font-size: 10px; color: var(--text-tertiary);">· ${gate.trend === 'rising' ? '↑' : gate.trend === 'falling' ? '↓' : '→'} ${gate.trend}</span>
-                  </div>
-                </div>
-                <span class="badge ${gate.waitMinutes <= 5 ? 'badge-success' : 'badge-warning'}" style="align-self: center;">${gate.waitMinutes <= 5 ? 'Best' : 'Open'}</span>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-
-      <!-- Evacuation Guidelines -->
-      <div class="section animate-fade-in-up" style="animation-delay: 400ms;">
-        <div class="section-header">
-          <span class="section-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline;vertical-align:-2px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            EVACUATION GUIDELINES
-          </span>
-        </div>
-        <div class="card card-no-hover" style="border-left: 3px solid var(--danger); background: rgba(248,113,113,0.03);">
-          <p style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.7;">${emergency.evacuationMessage}</p>
-        </div>
-      </div>
-
-      <!-- First Aid -->
-      <div class="section animate-fade-in-up" style="animation-delay: 480ms;">
-        <div class="section-header">
-          <span class="section-title">FIRST AID STATIONS</span>
-        </div>
-        <div class="flex-col gap-2">
-          ${Config.pois.filter(p => p.type === 'medical').map(poi => `
-            <div class="card card-compact flex-row" style="gap: 12px; cursor: pointer;" data-navigate-lat="${poi.lat}" data-navigate-lng="${poi.lng}">
-              <div style="width: 42px; height: 42px; border-radius: var(--radius-lg); background: linear-gradient(135deg, rgba(248,113,113,0.15), rgba(220,38,38,0.1)); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-              </div>
-              <div style="flex: 1;">
-                <div class="font-semibold" style="font-size: var(--text-sm);">${poi.name}</div>
-                <div style="font-size: 10px; color: var(--text-tertiary); margin-top: 2px;">Medical services available</div>
-              </div>
-              <button class="btn btn-ghost btn-sm" style="font-size: 10px; padding: 4px 10px;">Navigate →</button>
             </div>
-          `).join('')}
-        </div>
-      </div>
-
-      <!-- Safety Tips -->
-      <div class="section animate-fade-in-up" style="animation-delay: 560ms;">
-        <div class="section-header">
-          <span class="section-title">SAFETY TIPS</span>
-        </div>
-        <div class="card card-no-hover">
-          <div class="flex-col" style="gap: 14px;">
-            ${emergency.safetyTips.map((tip, i) => `
-              <div class="flex-row" style="gap: 12px; align-items: flex-start;">
-                <div style="width: 24px; height: 24px; border-radius: var(--radius-sm); background: var(--accent-blue-dim); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 10px; font-weight: 800; color: var(--accent-blue-light);">${i + 1}</div>
-                <p style="font-size: var(--text-sm); color: var(--text-secondary); flex: 1; line-height: 1.5;">${tip}</p>
-              </div>
-            `).join('')}
           </div>
         </div>
-      </div>
 
-      <!-- Report Issues -->
-      <div class="section animate-fade-in-up" style="animation-delay: 640ms;">
-        <div class="section-header"><span class="section-title">REPORT AN ISSUE</span></div>
-        <div class="grid-2 gap-2">
-          ${[
-            { id: 'btn-report-suspicious', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>', label: 'Suspicious Activity' },
-            { id: 'btn-report-maintenance', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>', label: 'Maintenance' },
-            { id: 'btn-report-medical', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>', label: 'Medical Need' },
-            { id: 'btn-report-lost', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>', label: 'Lost Child' }
-          ].map(r => `
-            <button class="btn btn-secondary btn-sm btn-full" id="${r.id}" style="gap: 6px; font-size: 11px; padding: 10px;">
-              ${r.icon} ${r.label}
-            </button>
-          `).join('')}
+        <!-- Exits -->
+        <div class="animate-fade-in-up" style="animation-delay: 240ms;">
+           <div class="flex justify-between items-end mb-4 px-2">
+            <h3 class="font-headline font-black text-lg tracking-tight uppercase italic flex items-center gap-2">
+              <span class="material-symbols-outlined text-emerald-500" style="font-variation-settings: 'FILL' 1;">directions_run</span>
+              EVAC_ROUTES
+            </h3>
+          </div>
+          <div class="space-y-3">
+          ${sortedGates.map((gate, i) => {
+            const isBest = gate.waitMinutes <= 5;
+            const poiData = Config.pois.find(p => p.id === gate.id);
+            return \`
+              <div class="glass-cyber rounded-2xl p-3 border-emerald-500/20 \${isBest ? 'bg-emerald-500/5' : ''} flex items-center gap-3 cursor-pointer hover:bg-zinc-900 transition-colors" \${poiData ? \`data-navigate-lat="\${poiData.lat}" data-navigate-lng="\${poiData.lng}"\` : ''}>
+                <div class="w-10 h-10 rounded-xl bg-black border \${isBest ? 'border-emerald-500/50 text-emerald-500' : 'border-emerald-500/20 text-emerald-500/50'} flex flex-col items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-sm">exit_to_app</span>
+                </div>
+                <div class="flex-grow">
+                  <div class="flex justify-between items-start mb-1">
+                    <h4 class="font-headline font-black text-white text-sm uppercase tracking-tight">\${gate.name}</h4>
+                    <span class="px-2 py-0.5 rounded text-[8px] font-black tracking-widest uppercase border \${isBest ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500' : 'bg-red-500/10 border-red-500/30 text-red-500'}">\${gate.waitMinutes}M_WAIT</span>
+                  </div>
+                  <p class="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">STATUS: \${isBest ? 'OPTIMAL' : 'CONGESTED'}</p>
+                </div>
+              </div>
+            \`;
+          }).join('')}
+          </div>
         </div>
+
+        <!-- Issue Reporting -->
+        <div class="animate-fade-in-up" style="animation-delay: 320ms;">
+           <div class="flex justify-between items-end mb-4 px-2">
+            <h3 class="font-headline font-black text-lg tracking-tight uppercase italic flex items-center gap-2 text-orange-500">
+              <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">warning</span>
+              SUBMIT_REPORT
+            </h3>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+             <button class="glass-cyber rounded-2xl p-3 border-orange-500/20 text-left hover:bg-zinc-900 transition-colors active:scale-95" id="btn-report-suspicious">
+                <span class="material-symbols-outlined text-orange-500 mb-2">policy</span>
+                <p class="font-headline font-black text-xs text-white uppercase tracking-widest">SUSPICIOUS INTEL</p>
+             </button>
+             <button class="glass-cyber rounded-2xl p-3 border-orange-500/20 text-left hover:bg-zinc-900 transition-colors active:scale-95" id="btn-report-maintenance">
+                <span class="material-symbols-outlined text-orange-500 mb-2">build</span>
+                <p class="font-headline font-black text-xs text-white uppercase tracking-widest">SYSTEM REPAIR</p>
+             </button>
+             <button class="glass-cyber rounded-2xl p-3 border-orange-500/20 text-left hover:bg-zinc-900 transition-colors active:scale-95" id="btn-report-medical">
+                <span class="material-symbols-outlined text-orange-500 mb-2">medical_services</span>
+                <p class="font-headline font-black text-xs text-white uppercase tracking-widest">MEDICAL ASST.</p>
+             </button>
+             <button class="glass-cyber rounded-2xl p-3 border-orange-500/20 text-left hover:bg-zinc-900 transition-colors active:scale-95" id="btn-report-lost">
+                <span class="material-symbols-outlined text-orange-500 mb-2">child_care</span>
+                <p class="font-headline font-black text-xs text-white uppercase tracking-widest">LOST ENTITY</p>
+             </button>
+          </div>
+        </div>
+
       </div>
     `;
 

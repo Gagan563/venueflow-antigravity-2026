@@ -12,87 +12,77 @@ const ConciergeView = {
     const suggestions = GeminiService.getSuggestions();
 
     container.innerHTML = `
-      <div class="chat-container">
-        <!-- Chat Header -->
-        <div class="animate-fade-in-up" style="padding-bottom: 14px; border-bottom: 1px solid var(--glass-border);">
-          <div class="flex-between">
-            <div class="flex-row gap-4">
-              <div style="
-                width: 48px; height: 48px; border-radius: var(--radius-xl);
-                background: linear-gradient(135deg, rgba(167,139,250,0.2), rgba(244,114,182,0.15));
-                border: 1px solid rgba(167,139,250,0.2);
-                display: flex; align-items: center; justify-content: center;
-                position: relative;
-              ">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round">
-                  <path d="M12 8V4H8"/><rect x="2" y="8" width="20" height="8" rx="2"/>
-                  <path d="M6 8V4"/><path d="M8 16v4"/><path d="M16 16v4"/>
-                  <circle cx="8" cy="12" r="1" fill="#a78bfa"/><circle cx="16" cy="12" r="1" fill="#a78bfa"/>
-                </svg>
-                <div style="position:absolute;bottom:-2px;right:-2px;width:12px;height:12px;border-radius:50%;background:var(--success);border:2px solid var(--bg-primary);box-shadow:0 0 6px var(--success);"></div>
+      <div class="relative min-h-screen pt-24 pb-[140px] flex flex-col w-full max-w-md mx-auto">
+        
+        <!-- Header -->
+        <div class="glass-cyber rounded-b-[2.5rem] p-6 border-b border-white/5 animate-fade-in-down z-10 sticky top-0 shrink-0">
+          <div class="flex justify-between items-center mb-2">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-full border border-primary/30 flex items-center justify-center shrink-0 bg-primary/10 shadow-[0_0_15px_rgba(191,0,255,0.2)] relative">
+                <span class="material-symbols-outlined text-primary text-xl">smart_toy</span>
+                <div class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-black animate-pulse"></div>
               </div>
               <div>
-                <h1 style="font-size: var(--text-lg); font-weight: var(--font-extrabold); letter-spacing: -0.02em;">AI Concierge</h1>
-                <div class="flex-row gap-2" style="gap: 6px; margin-top: 2px;">
-                  <span style="font-size: 10px; color: var(--accent-violet); font-weight: var(--font-semibold); letter-spacing: 0.04em;">Powered by Gemini</span>
-                </div>
+                <h1 class="text-2xl font-black italic tracking-tighter uppercase font-headline">A.I<span class="text-secondary text-neon-cyan">_NODE</span></h1>
+                <p class="text-zinc-500 text-[10px] font-bold tracking-widest uppercase">GMNI_MODEL_ACTIVE</p>
               </div>
             </div>
-            <button class="btn btn-ghost btn-icon-sm" id="btn-clear-chat" aria-label="Clear chat" title="Clear chat">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            <button class="w-10 h-10 rounded-full bg-black border border-white/5 text-zinc-500 flex items-center justify-center hover:text-white hover:border-white/20 transition-colors" id="btn-clear-chat">
+              <span class="material-symbols-outlined text-sm">mop</span>
             </button>
+          </div>
+          
+          <!-- Suggestions -->
+          <div class="flex gap-2 overflow-x-auto pb-1 mt-4 no-scrollbar px-1" id="chat-suggestions">
+            ${suggestions.map(s => `
+              <button class="shrink-0 bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white hover:border-white/30 rounded-full py-1.5 px-3 font-headline font-black text-[9px] uppercase tracking-widest transition-colors suggestion-chip" data-suggestion="${s}">
+                ${s}
+              </button>
+            `).join('')}
           </div>
         </div>
 
-        <!-- Quick Suggestions -->
-        <div class="chat-suggestions animate-fade-in-up" style="animation-delay: 80ms;" id="chat-suggestions">
-          ${suggestions.map(s => `
-            <button class="chip suggestion-chip" data-suggestion="${s}" style="white-space: nowrap; flex-shrink: 0;">${s}</button>
-          `).join('')}
-        </div>
-
         <!-- Chat Messages -->
-        <div class="chat-messages" id="chat-messages" role="log" aria-label="Chat conversation" aria-live="polite">
+        <div class="flex-grow overflow-y-auto px-4 py-6 space-y-6" id="chat-messages" role="log" aria-live="polite">
           ${chatHistory.length === 0 ? `
-            <div class="chat-bubble chat-bubble-ai">
-              <div class="ai-label">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                VENUEFLOW AI
-              </div>
-              <div>
-                <p style="color: var(--text-primary); margin-bottom: 10px;">Hey there! 👋 Welcome to <strong>${Config.venue.name}</strong>!</p>
-                <p style="color: var(--text-secondary); margin-bottom: 10px;">I'm your AI concierge — here's what I can help with:</p>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 12px 0;">
-                  ${[
-                    { icon: '🍔', label: 'Shortest food queues' },
-                    { icon: '🚻', label: 'Nearest restrooms' },
-                    { icon: '📊', label: 'Crowd information' },
-                    { icon: '🗺️', label: 'Venue navigation' },
-                    { icon: '📅', label: 'Event schedule' },
-                    { icon: '🚨', label: 'Emergency help' }
-                  ].map(item => `
-                    <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:var(--radius-md);font-size:var(--text-xs);color:var(--text-secondary);">
-                      <span>${item.icon}</span>
-                      <span>${item.label}</span>
-                    </div>
-                  `).join('')}
+            <div class="animate-fade-in-up">
+              <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0 mt-1">
+                  <span class="material-symbols-outlined text-primary text-xs">smart_toy</span>
                 </div>
-                <p style="color: var(--text-tertiary); font-size: var(--text-sm);">Just ask me anything, or tap a suggestion above!</p>
+                <div class="glass-cyber rounded-2xl p-4 border-primary/10 bg-black/40 rounded-tl-none -ml-1">
+                  <span class="text-[9px] text-primary font-bold uppercase tracking-widest mb-2 block">VENUEFLOW AI</span>
+                  <p class="text-white text-sm mb-4 leading-relaxed">Hey there! 👋 Welcome to <strong class="text-secondary font-black">${Config.venue.name}</strong>!</p>
+                  <p class="text-zinc-400 text-xs mb-3">I'm your AI concierge — here's what I can direct you to:</p>
+                  <div class="grid grid-cols-2 gap-2 mb-4">
+                    <div class="bg-zinc-900/50 border border-white/5 rounded-lg p-2 flex items-center gap-2">
+                       <span class="text-sm">🍔</span> <span class="text-[9px] text-zinc-300 font-bold tracking-widest uppercase">FOOD QUEUES</span>
+                    </div>
+                    <div class="bg-zinc-900/50 border border-white/5 rounded-lg p-2 flex items-center gap-2">
+                       <span class="text-sm">🚻</span> <span class="text-[9px] text-zinc-300 font-bold tracking-widest uppercase">RESTROOMS</span>
+                    </div>
+                    <div class="bg-zinc-900/50 border border-white/5 rounded-lg p-2 flex items-center gap-2">
+                       <span class="text-sm">📊</span> <span class="text-[9px] text-zinc-300 font-bold tracking-widest uppercase">CROWD DATA</span>
+                    </div>
+                    <div class="bg-zinc-900/50 border border-white/5 rounded-lg p-2 flex items-center gap-2">
+                       <span class="text-sm">🗺️</span> <span class="text-[9px] text-zinc-300 font-bold tracking-widest uppercase">NAVIGATION</span>
+                    </div>
+                  </div>
+                  <p class="text-[10px] text-zinc-500 font-bold tracking-widest uppercase">AWAITING_INPUT_COMMAND...</p>
+                </div>
               </div>
             </div>
           ` : chatHistory.map(msg => this._renderMessage(msg)).join('')}
         </div>
 
-        <!-- Chat Input -->
-        <div class="chat-input-area" id="chat-input-area">
-          <div class="input-with-icon" style="flex: 1;">
-            <span class="input-icon" style="font-size: var(--text-base);">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            </span>
-            <textarea class="input" id="chat-input" placeholder="Ask me anything about the venue..." rows="1" aria-label="Type your message" maxlength="500" style="padding-left: 40px;"></textarea>
+        <!-- Input Area -->
+        <div class="fixed bottom-[80px] left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md z-40 p-2 glass-cyber rounded-[2rem] border border-white/10 flex items-end gap-2" id="chat-input-area">
+          <div class="flex-grow relative flex items-center bg-zinc-900 rounded-[1.5rem] px-4 py-3 border border-white/5 focus-within:border-primary/50 transition-colors">
+            <span class="material-symbols-outlined text-zinc-500 text-lg mr-2" style="font-variation-settings: 'FILL' 1;">terminal</span>
+            <textarea class="w-full bg-transparent border-none text-white text-sm outline-none resize-none max-h-32 placeholder:text-zinc-600 font-medium" id="chat-input" placeholder="Query Node..." rows="1" maxlength="500"></textarea>
           </div>
-          <button class="btn btn-primary btn-icon" id="btn-send-chat" aria-label="Send message" title="Send" style="box-shadow: var(--shadow-glow-blue);">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          <button class="w-12 h-12 rounded-[1.2rem] bg-primary text-black flex items-center justify-center shrink-0 active:scale-90 transition-all font-bold hover:bg-fuchsia-400 shadow-[0_0_15px_rgba(191,0,255,0.3)]" id="btn-send-chat">
+            <span class="material-symbols-outlined text-sm font-black">send</span>
           </button>
         </div>
       </div>
@@ -104,16 +94,25 @@ const ConciergeView = {
 
   _renderMessage(msg) {
     if (msg.role === 'user') {
-      return `<div class="chat-bubble chat-bubble-user">${this._escapeHtml(msg.text)}</div>`;
+      return `
+        <div class="flex items-start gap-3 flex-row-reverse animate-fade-in-up">
+           <div class="glass-cyber rounded-2xl p-4 border-secondary/20 bg-secondary/10 rounded-tr-none -mr-1">
+              <span class="text-[9px] text-secondary font-bold uppercase tracking-widest mb-2 block text-right text-neon-cyan">USER_QUERY</span>
+              <div class="text-white text-sm leading-relaxed">${this._escapeHtml(msg.text)}</div>
+           </div>
+        </div>
+      `;
     }
     return `
-      <div class="chat-bubble chat-bubble-ai">
-        <div class="ai-label">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          VENUEFLOW AI
+        <div class="flex items-start gap-3 animate-fade-in-up">
+          <div class="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0 mt-1">
+            <span class="material-symbols-outlined text-primary text-xs">smart_toy</span>
+          </div>
+          <div class="glass-cyber rounded-2xl p-4 border-primary/10 bg-black/40 rounded-tl-none -ml-1 overflow-x-hidden">
+            <span class="text-[9px] text-primary font-bold uppercase tracking-widest mb-2 block">VENUEFLOW AI</span>
+            <div class="text-zinc-200 text-sm leading-relaxed">${this._formatAIResponse(msg.text)}</div>
+          </div>
         </div>
-        <div style="color: var(--text-secondary); line-height: 1.6;">${this._formatAIResponse(msg.text)}</div>
-      </div>
     `;
   },
 

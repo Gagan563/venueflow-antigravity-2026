@@ -16,65 +16,72 @@ const QueueView = {
     const maxWait = Math.max(...queues.map(q => q.waitMinutes));
 
     container.innerHTML = `
-      <div class="animate-fade-in-up" style="margin-bottom: 20px;">
-        <h1 style="font-size: var(--text-xl); font-weight: var(--font-extrabold); letter-spacing: -0.02em; margin-bottom: 4px;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue-light)" stroke-width="2" stroke-linecap="round" style="display:inline;vertical-align:-3px;margin-right:8px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Queue Status
-        </h1>
-        <p style="font-size: var(--text-sm); color: var(--text-tertiary);">Real-time wait times across the venue</p>
-      </div>
+      <div class="relative min-h-screen pt-24 pb-32 px-4 sm:px-6 w-full max-w-md mx-auto space-y-6 flex flex-col">
+        <!-- Header -->
+        <div class="glass-cyber rounded-[2.5rem] p-6 border-emerald-500/20 text-center animate-fade-in-up">
+          <div class="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 px-3 py-1 rounded-full mb-4 shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_5px_#10B981]"></span>
+            <span class="font-black text-[9px] uppercase tracking-[0.2em] font-headline">WAIT_TIMES</span>
+          </div>
+          <h1 class="text-3xl font-black italic tracking-tighter uppercase font-headline">CROWD<span class="text-emerald-500 text-neon-cyan">_CONTROL</span></h1>
+          <p class="text-zinc-500 text-[10px] font-bold tracking-widest uppercase mt-2">OPTIMIZING ROUTES</p>
+        </div>
 
-      <!-- Summary Cards -->
-      <div class="grid-3 animate-fade-in-up" style="margin-bottom: 20px; animation-delay: 80ms;">
-        <div class="card card-compact card-no-hover text-center" style="border-color: rgba(52,211,153,0.15);">
-          <div style="font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-tertiary); margin-bottom: 6px;">SHORTEST</div>
-          <div class="font-mono font-bold" style="font-size: var(--text-xl); color: var(--success); text-shadow: 0 0 12px rgba(52,211,153,0.3);" id="queue-shortest">${minWait}m</div>
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-3 gap-3 animate-fade-in-up" style="animation-delay: 80ms;">
+          <div class="glass-cyber p-3 rounded-2xl flex flex-col items-center justify-center border-emerald-500/20 hover:bg-zinc-900 transition-colors">
+            <span class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1">SHORTEST</span>
+            <div class="font-headline font-black text-2xl text-emerald-500" id="queue-shortest">${minWait}<span class="text-xs">m</span></div>
+          </div>
+          <div class="glass-cyber p-3 rounded-2xl flex flex-col items-center justify-center border-blue-500/20 hover:bg-zinc-900 transition-colors">
+            <span class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1">AVERAGE</span>
+            <div class="font-headline font-black text-2xl text-blue-500" id="queue-average">${avgWait}<span class="text-xs">m</span></div>
+          </div>
+          <div class="glass-cyber p-3 rounded-2xl flex flex-col items-center justify-center border-fuchsia-500/20 hover:bg-zinc-900 transition-colors">
+            <span class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1">LONGEST</span>
+            <div class="font-headline font-black text-2xl text-fuchsia-500" id="queue-longest">${maxWait}<span class="text-xs">m</span></div>
+          </div>
         </div>
-        <div class="card card-compact card-no-hover text-center" style="border-color: rgba(79,142,255,0.15);">
-          <div style="font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-tertiary); margin-bottom: 6px;">AVERAGE</div>
-          <div class="font-mono font-bold" style="font-size: var(--text-xl); color: var(--accent-blue-light); text-shadow: 0 0 12px rgba(79,142,255,0.3);" id="queue-average">${avgWait}m</div>
-        </div>
-        <div class="card card-compact card-no-hover text-center" style="border-color: rgba(248,113,113,0.15);">
-          <div style="font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-tertiary); margin-bottom: 6px;">LONGEST</div>
-          <div class="font-mono font-bold" style="font-size: var(--text-xl); color: var(--danger); text-shadow: 0 0 12px rgba(248,113,113,0.3);" id="queue-longest">${maxWait}m</div>
-        </div>
-      </div>
 
-      <!-- Filter Tabs -->
-      <div class="flex-row animate-fade-in-up" style="margin-bottom: 16px; gap: 8px; animation-delay: 120ms;" role="tablist">
-        <button class="chip chip-active" data-tab="all" role="tab" id="tab-all">All</button>
-        <button class="chip" data-tab="food" role="tab" id="tab-food">Food</button>
-        <button class="chip" data-tab="restroom" role="tab" id="tab-restroom">Restrooms</button>
-        <button class="chip" data-tab="gate" role="tab" id="tab-gate">Gates</button>
-      </div>
-
-      <!-- Queue List -->
-      <div class="flex-col" id="queue-list" role="list" aria-live="polite">
-        ${this._renderQueueList(queues)}
-      </div>
-
-      <!-- Trend Chart -->
-      <div class="section" style="margin-top: 24px;">
-        <div class="section-header">
-          <span class="section-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline;vertical-align:-2px;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-            WAIT TIME TRENDS
-          </span>
-          <span class="badge badge-info">30 min</span>
+        <!-- Filter Tabs -->
+        <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar animate-fade-in-up px-1" style="animation-delay: 120ms;" role="tablist">
+          <button class="shrink-0 font-headline font-black text-[10px] uppercase tracking-widest px-4 py-2 rounded-full transition-colors active:scale-95 border ${this._activeTab === 'all' ? 'bg-primary text-black border-primary/50' : 'bg-zinc-900 border-white/10 text-zinc-400 hover:text-white'}" data-tab="all" role="tab" id="tab-all">ALL</button>
+          <button class="shrink-0 font-headline font-black text-[10px] uppercase tracking-widest px-4 py-2 rounded-full transition-colors active:scale-95 border ${this._activeTab === 'food' ? 'bg-primary text-black border-primary/50' : 'bg-zinc-900 border-white/10 text-zinc-400 hover:text-white'}" data-tab="food" role="tab" id="tab-food">FOOD</button>
+          <button class="shrink-0 font-headline font-black text-[10px] uppercase tracking-widest px-4 py-2 rounded-full transition-colors active:scale-95 border ${this._activeTab === 'restroom' ? 'bg-primary text-black border-primary/50' : 'bg-zinc-900 border-white/10 text-zinc-400 hover:text-white'}" data-tab="restroom" role="tab" id="tab-restroom">WC</button>
+          <button class="shrink-0 font-headline font-black text-[10px] uppercase tracking-widest px-4 py-2 rounded-full transition-colors active:scale-95 border ${this._activeTab === 'gate' ? 'bg-primary text-black border-primary/50' : 'bg-zinc-900 border-white/10 text-zinc-400 hover:text-white'}" data-tab="gate" role="tab" id="tab-gate">GATES</button>
         </div>
-        <div class="card card-no-hover" style="padding: 16px; position: relative; height: 220px;">
-          <canvas id="queue-trend-chart"></canvas>
-        </div>
-      </div>
 
-      <!-- Best Times -->
-      <div class="section" style="margin-top: 16px;">
-        <div class="section-header">
-          <span class="section-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:inline;vertical-align:-2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-            BEST TIME TO GO
-          </span>
+        <!-- Queue List -->
+        <div class="space-y-4" id="queue-list" role="list">
+          ${this._renderQueueList(queues)}
         </div>
-        ${this._renderBestTimes(queues)}
+
+        <!-- Trend Chart -->
+        <div class="animate-fade-in-up" style="animation-delay: 200ms;">
+          <div class="flex justify-between items-end mb-4 px-2">
+            <h3 class="font-headline font-black text-lg tracking-tight uppercase italic flex items-center gap-2">
+              <span class="material-symbols-outlined text-emerald-500" style="font-variation-settings: 'FILL' 1;">stacked_line_chart</span>
+              WAIT_TRENDS
+            </h3>
+            <span class="text-zinc-500 font-bold text-[9px] tracking-widest uppercase border border-white/10 px-2 py-0.5 rounded">30 MIN</span>
+          </div>
+          <div class="glass-cyber rounded-2xl p-4 border border-white/5 h-56 relative w-full overflow-hidden">
+            <canvas id="queue-trend-chart" class="w-full h-full"></canvas>
+          </div>
+        </div>
+
+        <!-- Best Times / Tips -->
+        <div class="animate-fade-in-up" style="animation-delay: 300ms;">
+          <div class="flex justify-between items-end mb-4 px-2">
+            <h3 class="font-headline font-black text-lg tracking-tight uppercase italic flex items-center gap-2">
+              <span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">tips_and_updates</span>
+              STRATEGY
+            </h3>
+          </div>
+          <div class="space-y-3">
+            ${this._renderBestTimes(queues)}
+          </div>
+        </div>
       </div>
     `;
 
@@ -89,41 +96,49 @@ const QueueView = {
     const sorted = [...filtered].sort((a, b) => a.waitMinutes - b.waitMinutes);
 
     return sorted.map((q, i) => {
-      const status = Format.waitStatus(q.waitMinutes);
-      const barClass = q.waitMinutes <= 5 ? 'low' : q.waitMinutes <= 15 ? 'medium' : 'high';
-      const trendIcon = q.trend === 'rising' ? '↑' : q.trend === 'falling' ? '↓' : '→';
-      const trendColor = q.trend === 'rising' ? 'var(--danger)' : q.trend === 'falling' ? 'var(--success)' : 'var(--text-tertiary)';
+      const isHigh = q.waitMinutes > 15;
+      const isMedium = q.waitMinutes > 5 && q.waitMinutes <= 15;
+      const statusColorClass = isHigh ? 'text-fuchsia-500' : (isMedium ? 'text-orange-500' : 'text-emerald-500');
+      const barColorClass = isHigh ? 'bg-fuchsia-500' : (isMedium ? 'bg-orange-500' : 'bg-emerald-500');
+      
+      const trendIcon = q.trend === 'rising' ? 'moving_up' : q.trend === 'falling' ? 'moving_down' : 'flatware';
+      const trendColor = q.trend === 'rising' ? 'text-fuchsia-500' : q.trend === 'falling' ? 'text-emerald-500' : 'text-zinc-500';
 
       return `
-        <div class="card card-compact animate-fade-in-up" style="animation-delay: ${i * 40}ms; margin-bottom: 8px;" role="listitem">
-          <div class="flex-between" style="margin-bottom: 10px;">
-            <div class="flex-row gap-4" style="gap: 12px;">
-              <div style="
-                width: 42px; height: 42px; border-radius: var(--radius-lg);
-                background: ${this._getTypeGradient(q.type)};
-                display: flex; align-items: center; justify-content: center;
-                font-size: var(--text-lg); flex-shrink: 0;
-              ">${q.icon}</div>
+        <div class="glass-cyber rounded-2xl p-4 border-white/5 hover:bg-zinc-900 transition-colors animate-fade-in-up" style="animation-delay: ${i * 40}ms;" role="listitem">
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-xl bg-black border border-white/10 flex items-center justify-center shrink-0 text-xl shadow-[inset_0_0_15px_rgba(0,0,0,0.8)]">
+                ${q.icon}
+              </div>
               <div>
-                <div class="font-semibold" style="font-size: var(--text-sm);">${q.name}</div>
-                <div class="flex-row" style="gap: 8px; margin-top: 3px;">
-                  <span style="font-size: 10px; color: var(--text-tertiary); text-transform: capitalize;">${q.type}</span>
-                  <span style="font-size: 10px; color: ${trendColor}; font-weight: 600;">${trendIcon} ${q.trend}</span>
+                <h4 class="font-headline font-black text-white text-sm uppercase tracking-tight">${q.name}</h4>
+                <div class="flex items-center gap-2 mt-1">
+                  <span class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">${q.type}</span>
+                  <span class="flex items-center text-[10px] uppercase font-black tracking-widest ${trendColor}">
+                    <span class="material-symbols-outlined text-[12px] mr-0.5">${trendIcon}</span>
+                    ${q.trend}
+                  </span>
                 </div>
               </div>
             </div>
-            <div style="text-align: right;">
-              <div class="font-mono font-bold" style="font-size: var(--text-xl); color: var(--${status}); text-shadow: 0 0 12px ${status === 'success' ? 'rgba(52,211,153,0.3)' : status === 'warning' ? 'rgba(251,191,36,0.3)' : 'rgba(248,113,113,0.3)'};">
-                ${q.waitMinutes}<span style="font-size: 10px; color: var(--text-tertiary); font-weight: 400;">min</span>
+            
+            <div class="text-right flex flex-col items-end">
+              <div class="font-headline font-black text-2xl leading-none ${statusColorClass}">
+                ${q.waitMinutes}<span class="text-[10px] text-zinc-500 ml-0.5 tracking-widest uppercase">MIN</span>
               </div>
             </div>
           </div>
-          <div class="queue-bar queue-bar-${barClass}">
-            <div class="queue-bar-fill" style="width: ${Math.min(100, q.capacity)}%"></div>
+          
+          <div class="w-full h-1.5 bg-black rounded-full overflow-hidden border border-white/5 mb-2">
+            <div class="h-full ${barColorClass} transition-all duration-1000" style="width: ${Math.min(100, q.capacity)}%"></div>
           </div>
-          <div class="flex-between" style="margin-top: 8px;">
-            <span style="font-size: 10px; color: var(--text-tertiary);">Capacity: ${q.capacity}%</span>
-            <button class="btn btn-ghost btn-sm" onclick="Router.navigate('map')" style="font-size: 10px; padding: 4px 10px;">Navigate →</button>
+          
+          <div class="flex justify-between items-center mt-2">
+            <span class="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">NETWORK_LOAD: ${q.capacity}%</span>
+            <button class="bg-zinc-800 text-white rounded px-2 py-1 flex items-center gap-1 font-headline font-black text-[9px] tracking-widest uppercase hover:bg-zinc-700 transition-colors" onclick="Router.navigate('map')">
+              NAV <span class="material-symbols-outlined text-[10px]">arrow_forward</span>
+            </button>
           </div>
         </div>
       `;
@@ -131,29 +146,29 @@ const QueueView = {
   },
 
   _getTypeGradient(type) {
-    const gradients = {
-      food: 'linear-gradient(135deg, rgba(251,146,60,0.15), rgba(248,113,113,0.1))',
-      restroom: 'linear-gradient(135deg, rgba(167,139,250,0.15), rgba(99,102,241,0.1))',
-      gate: 'linear-gradient(135deg, rgba(79,142,255,0.15), rgba(34,211,238,0.1))'
-    };
-    return gradients[type] || 'var(--glass-bg)';
+    // Left for legacy compatibility or map styling if it references this
+    return 'var(--glass-bg)';
   },
 
   _renderBestTimes(queues) {
     const recs = [
-      { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg>', title: 'Food Runs', desc: queues.filter(q => q.type === 'food').some(q => q.waitMinutes <= 5) ? 'Now! Some stands have short lines.' : 'Wait 15 min for lines to thin.', good: queues.filter(q => q.type === 'food').some(q => q.waitMinutes <= 5) },
-      { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M2 21h20"/></svg>', title: 'Restrooms', desc: queues.filter(q => q.type === 'restroom').some(q => q.waitMinutes <= 3) ? 'Good time! Several have short waits.' : 'Try upper deck restrooms.', good: queues.filter(q => q.type === 'restroom').some(q => q.waitMinutes <= 3) },
-      { icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4f8eff" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>', title: 'Exit Strategy', desc: 'Leave 5 min before final whistle to avoid post-game rush.', good: null }
+      { icon: 'fastfood', title: 'NUTRITION', desc: queues.filter(q => q.type === 'food').some(q => q.waitMinutes <= 5) ? 'Nodes available. Low queue detected.' : 'High traffic. Delay resupply.', good: queues.filter(q => q.type === 'food').some(q => q.waitMinutes <= 5) },
+      { icon: 'wc', title: 'FACILITIES', desc: queues.filter(q => q.type === 'restroom').some(q => q.waitMinutes <= 3) ? 'Optimal timing. Clear path.' : 'Traffic congestion. Use upper sector.', good: queues.filter(q => q.type === 'restroom').some(q => q.waitMinutes <= 3) },
+      { icon: 'directions_run', title: 'EVACUATION', desc: 'Pre-calculate exit route. Initiate 5m prior to protocol end.', good: null }
     ];
 
     return recs.map(r => `
-      <div class="card card-compact flex-row" style="gap: 12px; margin-bottom: 8px;">
-        <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: var(--glass-bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">${r.icon}</div>
-        <div style="flex: 1;">
-          <div class="font-semibold" style="font-size: var(--text-sm);">${r.title}</div>
-          <div style="font-size: 11px; color: var(--text-tertiary); margin-top: 2px;">${r.desc}</div>
+      <div class="glass-cyber rounded-2xl p-3 border-white/5 flex gap-3 hover:bg-zinc-900 transition-colors">
+        <div class="w-10 h-10 rounded-xl bg-black border ${r.good ? 'border-emerald-500/30 text-emerald-500' : r.good === false ? 'border-orange-500/30 text-orange-500' : 'border-blue-500/30 text-blue-500'} flex items-center justify-center shrink-0">
+           <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">${r.icon}</span>
         </div>
-        ${r.good !== null ? `<span class="badge ${r.good ? 'badge-success' : 'badge-warning'}" style="align-self: flex-start;">${r.good ? 'Go Now' : 'Wait'}</span>` : '<span class="badge badge-info" style="align-self: flex-start;">Tip</span>'}
+        <div class="flex-grow py-0.5">
+          <div class="flex justify-between items-start mb-1">
+            <h5 class="font-headline font-black text-white text-xs uppercase tracking-widest">${r.title}</h5>
+            ${r.good !== null ? `<span class="px-2 py-0.5 rounded text-[8px] font-black tracking-widest uppercase border ${r.good ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500' : 'bg-orange-500/10 border-orange-500/30 text-orange-500'}">${r.good ? 'GO_NOW' : 'HOLD'}</span>` : `<span class="px-2 py-0.5 rounded text-[8px] font-black tracking-widest uppercase border bg-blue-500/10 border-blue-500/30 text-blue-500">INTEL</span>`}
+          </div>
+          <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-tight leading-tight">${r.desc}</p>
+        </div>
       </div>
     `).join('');
   },
