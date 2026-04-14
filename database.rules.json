@@ -1,0 +1,32 @@
+{
+  "rules": {
+    "queues": {
+      ".read": true,
+      ".write": true
+    },
+    "crowd": {
+      ".read": true,
+      ".write": true
+    },
+    "orders": {
+      ".read": true,
+      ".write": true
+    },
+    "notifications": {
+      ".read": true,
+      ".write": true
+    },
+    "sos-alerts": {
+      ".read": true,
+      ".write": true
+    },
+    "reports": {
+      ".read": true,
+      ".write": true
+    },
+    "venue": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}

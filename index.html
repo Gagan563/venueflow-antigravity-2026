@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="VenueFlow — Smart stadium experience platform with real-time crowd intelligence, AI concierge, and seamless event coordination.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <meta name="theme-color" content="#030508">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>VenueFlow — Smart Stadium Experience</title>
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Google Maps -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBDaeWicvigtP9xPv919E-RNoxfvC-Hqik&libraries=visualization,places&callback=Function.prototype" async defer></script>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+  <!-- Skip to content for accessibility -->
+  <a href="#main-content" class="sr-only" id="skip-nav">Skip to main content</a>
+
+  <div id="app">
+    <!-- Top Header -->
+    <header class="top-header" role="banner">
+      <div class="header-brand">
+        <div class="header-logo" aria-hidden="true">⚡</div>
+        <div>
+          <div class="header-title">VenueFlow</div>
+          <div class="header-subtitle" id="header-venue-name">MetLife Stadium</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-icon-sm btn-ghost notification-btn" id="btn-notifications" aria-label="Notifications" title="View notifications">
+          🔔
+          <span class="notif-badge" id="notif-count" aria-label="3 unread notifications">3</span>
+        </button>
+        <button class="btn btn-icon-sm btn-ghost" id="btn-settings" aria-label="Settings" title="Settings">
+          ⚙️
+        </button>
+        <button class="btn btn-icon-sm btn-ghost" id="btn-accessibility" aria-label="Accessibility options" title="Accessibility">
+          ♿
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="page-container" id="main-content" role="main">
+      <!-- Home View -->
+      <div class="view active" id="view-home" role="tabpanel" aria-label="Home Dashboard"></div>
+
+      <!-- Map View -->
+      <div class="view" id="view-map" role="tabpanel" aria-label="Live Crowd Map"></div>
+
+      <!-- Queue View -->
+      <div class="view" id="view-queue" role="tabpanel" aria-label="Queue Status"></div>
+
+      <!-- Concierge View -->
+      <div class="view" id="view-concierge" role="tabpanel" aria-label="AI Concierge"></div>
+
+      <!-- Order View -->
+      <div class="view" id="view-order" role="tabpanel" aria-label="Food & Drinks Order"></div>
+
+      <!-- Events View -->
+      <div class="view" id="view-events" role="tabpanel" aria-label="Event Timeline"></div>
+
+      <!-- Emergency View -->
+      <div class="view" id="view-emergency" role="tabpanel" aria-label="Emergency Information"></div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav" role="tablist" aria-label="Main navigation">
+      <button class="nav-item active" data-view="home" role="tab" aria-selected="true" aria-controls="view-home" id="nav-home">
+        <span class="nav-icon" aria-hidden="true">🏠</span>
+        <span class="nav-label">Home</span>
+      </button>
+      <button class="nav-item" data-view="map" role="tab" aria-selected="false" aria-controls="view-map" id="nav-map">
+        <span class="nav-icon" aria-hidden="true">🗺️</span>
+        <span class="nav-label">Map</span>
+      </button>
+      <button class="nav-item" data-view="queue" role="tab" aria-selected="false" aria-controls="view-queue" id="nav-queue">
+        <span class="nav-icon" aria-hidden="true">⏱️</span>
+        <span class="nav-label">Queues</span>
+      </button>
+      <button class="nav-item" data-view="concierge" role="tab" aria-selected="false" aria-controls="view-concierge" id="nav-concierge">
+        <span class="nav-icon" aria-hidden="true">🤖</span>
+        <span class="nav-label">AI Help</span>
+      </button>
+      <button class="nav-item" data-view="order" role="tab" aria-selected="false" aria-controls="view-order" id="nav-order">
+        <span class="nav-icon" aria-hidden="true">🍔</span>
+        <span class="nav-label">Order</span>
+      </button>
+      <button class="nav-item nav-emergency" data-view="emergency" role="tab" aria-selected="false" aria-controls="view-emergency" id="nav-emergency">
+        <span class="nav-icon" aria-hidden="true">🚨</span>
+        <span class="nav-label">SOS</span>
+      </button>
+    </nav>
+
+    <!-- Toast Container -->
+    <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+  </div>
+
+  <!-- JavaScript Modules -->
+  <script src="js/utils/dom.js"></script>
+  <script src="js/utils/format.js"></script>
+  <script src="js/utils/accessibility.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/services/firebase.js"></script>
+  <script src="js/services/maps.js"></script>
+  <script src="js/services/gemini.js"></script>
+  <script src="js/services/calendar.js"></script>
+  <script src="js/views/home.js"></script>
+  <script src="js/views/map.js"></script>
+  <script src="js/views/queue.js"></script>
+  <script src="js/views/concierge.js"></script>
+  <script src="js/views/order.js"></script>
+  <script src="js/views/events.js"></script>
+  <script src="js/views/emergency.js"></script>
+  <script src="js/router.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

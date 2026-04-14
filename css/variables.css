@@ -1,0 +1,140 @@
+/* ============================================
+   VenueFlow Design Tokens — V2 Premium
+   Stadium Noir: Deep space meets arena energy
+   ============================================ */
+
+:root {
+  /* ── Core Palette ── */
+  --bg-primary: #06080f;
+  --bg-secondary: #0c1017;
+  --bg-tertiary: #131a27;
+  --bg-elevated: #192133;
+
+  /* Surfaces (Frosted Glass) */
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-bg-hover: rgba(255, 255, 255, 0.06);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-border-hover: rgba(255, 255, 255, 0.12);
+  --glass-strong: rgba(255, 255, 255, 0.08);
+
+  /* Brand — Electric Neon */
+  --accent-blue: #4f8eff;
+  --accent-blue-light: #7fb3ff;
+  --accent-blue-dim: rgba(79, 142, 255, 0.12);
+  --accent-blue-glow: rgba(79, 142, 255, 0.25);
+  --accent-cyan: #22d3ee;
+  --accent-cyan-dim: rgba(34, 211, 238, 0.12);
+  --accent-violet: #a78bfa;
+  --accent-violet-dim: rgba(167, 139, 250, 0.12);
+  --accent-violet-glow: rgba(167, 139, 250, 0.2);
+  --accent-orange: #fb923c;
+  --accent-orange-dim: rgba(251, 146, 60, 0.12);
+  --accent-pink: #f472b6;
+  --accent-pink-dim: rgba(244, 114, 182, 0.12);
+
+  /* Semantic */
+  --success: #34d399;
+  --success-dim: rgba(52, 211, 153, 0.12);
+  --success-glow: rgba(52, 211, 153, 0.2);
+  --warning: #fbbf24;
+  --warning-dim: rgba(251, 191, 36, 0.12);
+  --danger: #f87171;
+  --danger-dim: rgba(248, 113, 113, 0.12);
+  --danger-glow: rgba(248, 113, 113, 0.25);
+  --info: #22d3ee;
+  --info-dim: rgba(34, 211, 238, 0.12);
+
+  /* Text */
+  --text-primary: #eef2f7;
+  --text-secondary: #8896aa;
+  --text-tertiary: #556075;
+  --text-inverse: #06080f;
+
+  /* Gradients — More dramatic */
+  --gradient-brand: linear-gradient(135deg, #4f8eff 0%, #a78bfa 50%, #f472b6 100%);
+  --gradient-brand-hover: linear-gradient(135deg, #7fb3ff 0%, #c4b5fd 50%, #f9a8d4 100%);
+  --gradient-warm: linear-gradient(135deg, #fb923c 0%, #f87171 100%);
+  --gradient-success: linear-gradient(135deg, #34d399 0%, #22d3ee 100%);
+  --gradient-cool: linear-gradient(135deg, #4f8eff 0%, #22d3ee 100%);
+  --gradient-surface: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+  --gradient-card: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+  --gradient-mesh: radial-gradient(ellipse at 20% 0%, rgba(79, 142, 255, 0.08) 0%, transparent 50%),
+                   radial-gradient(ellipse at 80% 100%, rgba(167, 139, 250, 0.06) 0%, transparent 50%);
+
+  /* ── Typography ── */
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  --text-xs: 0.6875rem;    /* 11px */
+  --text-sm: 0.8125rem;    /* 13px */
+  --text-base: 0.875rem;   /* 14px */
+  --text-md: 1rem;         /* 16px */
+  --text-lg: 1.125rem;     /* 18px */
+  --text-xl: 1.25rem;      /* 20px */
+  --text-2xl: 1.5rem;      /* 24px */
+  --text-3xl: 2rem;        /* 32px */
+  --text-4xl: 2.5rem;      /* 40px */
+
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.7;
+
+  /* ── Spacing ── */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* ── Border Radius ── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* ── Shadows (deeper, more dramatic) ── */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.7);
+  --shadow-glow-blue: 0 4px 30px rgba(79, 142, 255, 0.25), 0 0 60px rgba(79, 142, 255, 0.1);
+  --shadow-glow-violet: 0 4px 30px rgba(167, 139, 250, 0.25);
+  --shadow-glow-orange: 0 4px 30px rgba(251, 146, 60, 0.25);
+  --shadow-glow-danger: 0 4px 30px rgba(248, 113, 113, 0.3), 0 0 60px rgba(248, 113, 113, 0.15);
+  --shadow-inner: inset 0 1px 0 rgba(255,255,255,0.05);
+
+  /* ── Transitions ── */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ── Z-Index ── */
+  --z-base: 0;
+  --z-elevated: 10;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-modal: 500;
+  --z-toast: 700;
+  --z-nav: 900;
+  --z-overlay: 1000;
+
+  /* ── Layout ── */
+  --nav-height: 64px;
+  --bottom-nav-height: 72px;
+  --max-width: 480px;
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VenueFlow Test Suite</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: #0a0e1a; color: #f1f5f9; padding: 24px; }
+    h1 { font-size: 24px; margin-bottom: 24px; }
+    .test-suite { margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; }
+    .suite-header { padding: 12px 16px; background: rgba(255,255,255,0.05); font-weight: 600; font-size: 14px; }
+    .test-case { padding: 10px 16px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 13px; display: flex; align-items: center; gap: 10px; }
+    .test-case.pass { color: #10b981; }
+    .test-case.fail { color: #ef4444; }
+    .test-case .icon { font-size: 16px; }
+    .summary { padding: 16px; background: rgba(255,255,255,0.05); border-radius: 12px; font-size: 14px; margin-top: 16px; }
+    .summary.all-pass { border-left: 3px solid #10b981; }
+    .summary.has-fail { border-left: 3px solid #ef4444; }
+  </style>
+</head>
+<body>
+  <h1>🧪 VenueFlow Test Suite</h1>
+  <div id="test-output"></div>
+  <div id="test-summary"></div>
+
+  <!-- Load application scripts -->
+  <script src="../js/utils/dom.js"></script>
+  <script src="../js/utils/format.js"></script>
+  <script src="../js/utils/accessibility.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/state.js"></script>
+  <script src="../js/services/gemini.js"></script>
+  <script src="../js/services/calendar.js"></script>
+
+  <!-- Test runner -->
+  <script src="tests.js"></script>
+</body>
+</html>
