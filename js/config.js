@@ -6,7 +6,7 @@
 const Config = {
   // ── Google Maps ──
   maps: {
-    apiKey: 'AIzaSyBDaeWicvigtP9xPv919E-RNoxfvC-Hqik',
+    apiKey: 'AIzaSyBPiFzlSjra7uvioKy6GRsgY1WJ2btKO7o',
     defaultCenter: { lat: 40.8135, lng: -74.0745 }, // MetLife Stadium
     defaultZoom: 17,
     mapId: 'venueflow-map'
@@ -14,7 +14,7 @@ const Config = {
 
   // ── Gemini AI ──
   gemini: {
-    apiKey: 'AIzaSyBDaeWicvigtP9xPv919E-RNoxfvC-Hqik',
+    apiKey: 'AIzaSyBPiFzlSjra7uvioKy6GRsgY1WJ2btKO7o',
     model: 'gemini-2.0-flash',
     endpoint: 'https://generativelanguage.googleapis.com/v1beta/models',
     maxTokens: 1024,
