@@ -162,6 +162,7 @@
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: 20px;
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-around;
   padding: 0 6px;
@@ -174,8 +175,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  background: transparent;
+  border: none;
+  margin: 0;
   gap: 3px;
-  padding: 8px 14px;
+  padding: 8px 6px;
   border-radius: var(--radius-lg);
   color: var(--text-tertiary);
   font-size: 9px;
@@ -185,7 +189,12 @@
   cursor: pointer;
   position: relative;
   -webkit-tap-highlight-color: transparent;
-  min-width: 48px;
+  min-width: 0;
+  flex: 1;
+}
+
+.nav-item .nav-label {
+  white-space: nowrap;
 }
 
 .nav-item .nav-icon {
