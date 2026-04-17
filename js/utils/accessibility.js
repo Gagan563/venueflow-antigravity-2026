@@ -1,6 +1,6 @@
 /* ============================================
    VenueFlow Accessibility Utilities
-   ARIA management, focus trapping, TTS, 
+   ARIA management, focus trapping, TTS,
    keyboard navigation, screen reader support
    ============================================ */
 
@@ -18,13 +18,11 @@ const A11y = {
    * Initialize accessibility features
    */
   init() {
-    // Check user preferences
     this.screenReaderMode = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.highContrastMode = window.matchMedia('(prefers-contrast: high)').matches;
 
-    // Keyboard navigation detection
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Tab') {
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Tab') {
         document.body.classList.add('using-keyboard');
       }
     });
@@ -33,7 +31,6 @@ const A11y = {
       document.body.classList.remove('using-keyboard');
     });
 
-    // Listen for accessibility toggle
     this._setupA11yPanel();
   },
 
@@ -44,7 +41,7 @@ const A11y = {
    */
   announce(message, priority = 'polite') {
     let announcer = DOM.$(`#a11y-announcer-${priority}`);
-    
+
     if (!announcer) {
       announcer = DOM.create('div', {
         id: `a11y-announcer-${priority}`,
@@ -56,7 +53,6 @@ const A11y = {
       document.body.appendChild(announcer);
     }
 
-    // Clear and re-set to trigger announcement
     announcer.textContent = '';
     requestAnimationFrame(() => {
       announcer.textContent = message;
@@ -71,7 +67,6 @@ const A11y = {
   speak(text, options = {}) {
     if (!('speechSynthesis' in window)) return;
 
-    // Cancel any current speech
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
@@ -99,25 +94,21 @@ const A11y = {
    * @returns {Function} Cleanup function
    */
   trapFocus(container) {
-    const focusable = container.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
+    const focusable = container.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
 
-    const handler = (e) => {
-      if (e.key !== 'Tab') return;
+    const handler = event => {
+      if (event.key !== 'Tab') return;
 
-      if (e.shiftKey) {
+      if (event.shiftKey) {
         if (document.activeElement === first) {
-          e.preventDefault();
+          event.preventDefault();
           last.focus();
         }
-      } else {
-        if (document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
+      } else if (document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
       }
     };
 
@@ -153,7 +144,7 @@ const A11y = {
   toggleHighContrast() {
     this.highContrastMode = !this.highContrastMode;
     document.body.classList.toggle('high-contrast', this.highContrastMode);
-    
+
     if (this.highContrastMode) {
       document.documentElement.style.setProperty('--glass-bg', 'rgba(255,255,255,0.12)');
       document.documentElement.style.setProperty('--glass-border', 'rgba(255,255,255,0.25)');
@@ -165,7 +156,7 @@ const A11y = {
       document.documentElement.style.removeProperty('--text-secondary');
       document.documentElement.style.removeProperty('--text-tertiary');
     }
-    
+
     this.announce(`High contrast mode ${this.highContrastMode ? 'enabled' : 'disabled'}`);
   },
 
@@ -174,11 +165,7 @@ const A11y = {
    */
   toggleLargeText() {
     const isLarge = document.body.classList.toggle('large-text');
-    if (isLarge) {
-      document.documentElement.style.fontSize = '20px';
-    } else {
-      document.documentElement.style.fontSize = '16px';
-    }
+    document.documentElement.style.fontSize = isLarge ? '20px' : '16px';
     this.announce(`Large text ${isLarge ? 'enabled' : 'disabled'}`);
   },
 
@@ -187,10 +174,10 @@ const A11y = {
    * @private
    */
   _setupA11yPanel() {
-    const btn = DOM.$('#btn-accessibility');
-    if (!btn) return;
+    const button = DOM.$('#btn-accessibility');
+    if (!button) return;
 
-    btn.addEventListener('click', () => {
+    button.addEventListener('click', () => {
       const existing = DOM.$('#a11y-panel');
       if (existing) {
         existing.remove();
@@ -199,66 +186,54 @@ const A11y = {
 
       const panel = DOM.create('div', {
         id: 'a11y-panel',
-        className: 'card',
+        className: 'glass-cyber rounded-[1.5rem] border border-white/10 text-white',
         role: 'dialog',
         'aria-label': 'Accessibility Settings',
         style: {
           position: 'fixed',
-          top: '60px',
+          top: '68px',
           right: '12px',
           zIndex: '1000',
-          width: '260px',
+          width: '280px',
           padding: '16px'
         }
       });
 
       panel.innerHTML = `
-        <h3 style="font-size: var(--text-md); margin-bottom: var(--space-4);">♿ Accessibility</h3>
-        <div class="flex-col gap-4">
-          <div class="flex-between">
+        <h3 class="font-headline font-black text-sm uppercase tracking-[0.18em] mb-4">Accessibility</h3>
+        <div class="space-y-3">
+          <label class="flex items-center justify-between gap-4 rounded-[1.25rem] bg-black/50 border border-white/5 px-4 py-3 cursor-pointer">
             <span class="text-sm">High Contrast</span>
-            <label class="toggle">
-              <input type="checkbox" id="toggle-contrast" ${this.highContrastMode ? 'checked' : ''}>
-              <span class="toggle-track"></span>
-              <span class="toggle-thumb"></span>
-            </label>
-          </div>
-          <div class="flex-between">
+            <input type="checkbox" id="toggle-contrast" ${this.highContrastMode ? 'checked' : ''}>
+          </label>
+          <label class="flex items-center justify-between gap-4 rounded-[1.25rem] bg-black/50 border border-white/5 px-4 py-3 cursor-pointer">
             <span class="text-sm">Large Text</span>
-            <label class="toggle">
-              <input type="checkbox" id="toggle-large-text">
-              <span class="toggle-track"></span>
-              <span class="toggle-thumb"></span>
-            </label>
-          </div>
-          <div class="flex-between">
+            <input type="checkbox" id="toggle-large-text">
+          </label>
+          <label class="flex items-center justify-between gap-4 rounded-[1.25rem] bg-black/50 border border-white/5 px-4 py-3 cursor-pointer">
             <span class="text-sm">Screen Reader</span>
-            <label class="toggle">
-              <input type="checkbox" id="toggle-sr" ${this.screenReaderMode ? 'checked' : ''}>
-              <span class="toggle-track"></span>
-              <span class="toggle-thumb"></span>
-            </label>
-          </div>
-          <button class="btn btn-secondary btn-sm btn-full" id="btn-test-tts">🔊 Test Voice</button>
+            <input type="checkbox" id="toggle-sr" ${this.screenReaderMode ? 'checked' : ''}>
+          </label>
+          <button class="w-full rounded-full bg-zinc-900 border border-white/10 px-4 py-3 text-[10px] font-headline font-black uppercase tracking-[0.18em] hover:bg-zinc-800 transition-colors" id="btn-test-tts">
+            Test Voice
+          </button>
         </div>
       `;
 
       document.body.appendChild(panel);
 
-      // Event listeners
-      DOM.$('#toggle-contrast', panel).addEventListener('change', () => this.toggleHighContrast());
-      DOM.$('#toggle-large-text', panel).addEventListener('change', () => this.toggleLargeText());
-      DOM.$('#toggle-sr', panel).addEventListener('change', (e) => {
-        this.screenReaderMode = e.target.checked;
+      DOM.$('#toggle-contrast', panel)?.addEventListener('change', () => this.toggleHighContrast());
+      DOM.$('#toggle-large-text', panel)?.addEventListener('change', () => this.toggleLargeText());
+      DOM.$('#toggle-sr', panel)?.addEventListener('change', event => {
+        this.screenReaderMode = event.target.checked;
         this.announce(`Screen reader announcements ${this.screenReaderMode ? 'enabled' : 'disabled'}`);
       });
-      DOM.$('#btn-test-tts', panel).addEventListener('click', () => {
+      DOM.$('#btn-test-tts', panel)?.addEventListener('click', () => {
         this.speak('Welcome to VenueFlow. Your smart stadium assistant is ready.');
       });
 
-      // Close on outside click
-      const closeHandler = (e) => {
-        if (!panel.contains(e.target) && e.target !== btn) {
+      const closeHandler = event => {
+        if (!panel.contains(event.target) && !event.target.closest('#btn-accessibility')) {
           panel.remove();
           document.removeEventListener('click', closeHandler);
         }

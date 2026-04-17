@@ -117,7 +117,7 @@ const ConciergeView = {
   },
 
   _formatAIResponse(text) {
-    return text
+    return DOM.escapeHTML(text)
       .replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text-primary)">$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/\n\n/g, '</p><p style="margin-top:8px;">')
@@ -127,9 +127,7 @@ const ConciergeView = {
   },
 
   _escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    return DOM.escapeHTML(text);
   },
 
   async _sendMessage(message) {

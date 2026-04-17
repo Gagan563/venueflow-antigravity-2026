@@ -7,43 +7,40 @@ const App = {
   /** @type {boolean} */
   initialized: false,
 
+  /** @type {Function[]} */
+  _stateUnsubscribers: [],
+
   /**
    * Initialize the entire application
    */
   async init() {
-    console.log('🏟️ VenueFlow — Smart Stadium Experience');
-    console.log('━'.repeat(40));
+    console.log('VenueFlow - Smart Stadium Experience');
+    console.log('-'.repeat(40));
 
     try {
-      // 1. Initialize accessibility features
       A11y.init();
-      console.log('♿ Accessibility initialized');
+      console.log('Accessibility initialized');
 
-      // 2. Initialize Firebase (real-time data)
       FirebaseService.init();
-      console.log('🔥 Firebase initialized');
+      console.log('Firebase initialized');
 
-      // 3. Initialize router and views
       Router.init();
-      console.log('🗺️ Router initialized');
+      console.log('Router initialized');
 
-      // 4. Bind global event listeners
       this._bindGlobalEvents();
-
-      // 5. Register service worker for PWA
+      this._bindStateObservers();
+      this._updateNotificationBadge();
       this._registerServiceWorker();
 
-      // 6. Show welcome toast
       setTimeout(() => {
-        DOM.toast('Welcome to VenueFlow! 🏟️ Enjoy the game!', 'success', 4000);
+        DOM.toast('Welcome to VenueFlow! Enjoy the match.', 'success', 4000);
       }, 1000);
 
       this.initialized = true;
-      console.log('━'.repeat(40));
-      console.log('✅ VenueFlow ready!');
-
+      console.log('-'.repeat(40));
+      console.log('VenueFlow ready');
     } catch (error) {
-      console.error('❌ App initialization failed:', error);
+      console.error('App initialization failed:', error);
       DOM.toast('Failed to initialize. Please refresh.', 'danger');
     }
   },
@@ -53,58 +50,40 @@ const App = {
    * @private
    */
   _bindGlobalEvents() {
-    // Bottom navigation
     DOM.$$('.nav-item').forEach(navItem => {
-      navItem.addEventListener('click', (e) => {
-        DOM.ripple(e);
+      navItem.addEventListener('click', event => {
         const view = navItem.dataset.view;
-        if (view) Router.navigate(view);
+        if (view) {
+          DOM.ripple(event);
+          Router.navigate(view);
+        }
       });
     });
 
-    // Notification button
-    const notifBtn = DOM.$('#btn-notifications');
-    if (notifBtn) {
-      notifBtn.addEventListener('click', () => this._showNotifications());
-    }
+    DOM.$('#btn-notifications')?.addEventListener('click', () => this._showNotifications());
+    DOM.$('#btn-settings')?.addEventListener('click', () => this._showSettings());
 
-    // Settings button
-    const settingsBtn = DOM.$('#btn-settings');
-    if (settingsBtn) {
-      settingsBtn.addEventListener('click', () => this._showSettings());
-    }
-
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-      // Escape to close modals
-      if (e.key === 'Escape') {
-        const modal = DOM.$('#cart-modal');
-        if (modal) modal.style.display = 'none';
-        
-        const a11yPanel = DOM.$('#a11y-panel');
-        if (a11yPanel) a11yPanel.remove();
-        
-        const notifPanel = DOM.$('#notif-panel');
-        if (notifPanel) notifPanel.remove();
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') {
+        DOM.$('#cart-modal')?.classList.add('hidden');
+        DOM.$('#a11y-panel')?.remove();
+        DOM.$('#notif-panel')?.remove();
+        DOM.$('#settings-panel')?.remove();
       }
 
-      // Number keys for quick navigation (1-6)
-      if (!e.ctrlKey && !e.altKey && !e.metaKey) {
-        const views = ['home', 'map', 'queue', 'concierge', 'order', 'emergency'];
-        const num = parseInt(e.key);
-        if (num >= 1 && num <= 6 && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      if (!event.ctrlKey && !event.altKey && !event.metaKey) {
+        const views = ['home', 'map', 'queue', 'concierge', 'order', 'events', 'emergency', 'wallet'];
+        const num = parseInt(event.key, 10);
+        const tagName = document.activeElement?.tagName;
+
+        if (num >= 1 && num <= views.length && tagName !== 'INPUT' && tagName !== 'TEXTAREA') {
           Router.navigate(views[num - 1]);
         }
       }
     });
 
-    // Handle visibility change (pause/resume simulation)
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        console.log('⏸️ App backgrounded');
-      } else {
-        console.log('▶️ App foregrounded');
-        // Re-render current view to refresh data
+      if (!document.hidden) {
         const currentView = Router.views[Router.currentView];
         if (currentView && typeof currentView.render === 'function') {
           currentView.render();
@@ -112,22 +91,38 @@ const App = {
       }
     });
 
-    // Handle online/offline
     window.addEventListener('online', () => {
-      DOM.toast('✅ Back online!', 'success');
+      DOM.toast('Back online!', 'success');
     });
 
     window.addEventListener('offline', () => {
-      DOM.toast('📡 You are offline. Some features may be limited.', 'warning');
+      DOM.toast('You are offline. Some features may be limited.', 'warning');
     });
+  },
 
-    // Add ripple to all buttons
-    document.addEventListener('click', (e) => {
-      const btn = e.target.closest('.btn');
-      if (btn && !btn.closest('.nav-item')) {
-        DOM.ripple(e);
-      }
-    });
+  /**
+   * Observe global state used by the app shell
+   * @private
+   */
+  _bindStateObservers() {
+    this._stateUnsubscribers.forEach(unsubscribe => unsubscribe());
+    this._stateUnsubscribers = [
+      AppState.subscribe('notifications', () => this._updateNotificationBadge())
+    ];
+  },
+
+  /**
+   * Update the notification badge count
+   * @private
+   */
+  _updateNotificationBadge() {
+    const badge = DOM.$('#notif-count');
+    if (!badge) return;
+
+    const unread = AppState.get('notifications').filter(notification => !notification.read).length;
+    badge.textContent = unread.toString();
+    badge.classList.toggle('hidden', unread === 0);
+    badge.style.display = unread > 0 ? 'flex' : 'none';
   },
 
   /**
@@ -136,47 +131,51 @@ const App = {
    */
   _showNotifications() {
     const existing = DOM.$('#notif-panel');
-    if (existing) { existing.remove(); return; }
+    if (existing) {
+      existing.remove();
+      return;
+    }
 
     const notifications = AppState.get('notifications');
-
     const panel = DOM.create('div', {
       id: 'notif-panel',
-      className: 'card',
+      className: 'glass-cyber rounded-[1.5rem] border border-white/10 text-white',
       role: 'dialog',
       'aria-label': 'Notifications',
       style: {
         position: 'fixed',
-        top: '60px',
+        top: '68px',
         right: '12px',
         left: '12px',
-        maxWidth: 'calc(var(--max-width) - 24px)',
+        maxWidth: '420px',
         margin: '0 auto',
         zIndex: '1000',
-        maxHeight: '400px',
+        maxHeight: '420px',
         overflowY: 'auto',
         padding: '16px'
       }
     });
 
     panel.innerHTML = `
-      <div class="flex-between" style="margin-bottom: var(--space-4);">
-        <h3 style="font-size: var(--text-md);">🔔 Notifications</h3>
-        <button class="btn btn-ghost btn-sm" id="btn-mark-all-read">Mark all read</button>
+      <div class="flex items-center justify-between gap-4 mb-4">
+        <h3 class="font-headline font-black text-sm uppercase tracking-[0.18em]">Notifications</h3>
+        <button class="rounded-full bg-zinc-900 border border-white/10 px-3 py-2 text-[10px] font-headline font-black uppercase tracking-[0.18em] hover:bg-zinc-800 transition-colors" id="btn-mark-all-read">
+          Mark all read
+        </button>
       </div>
-      <div class="flex-col gap-2">
+      <div class="space-y-2">
         ${notifications.length === 0 ? `
-          <div class="empty-state" style="padding: var(--space-6);">
-            <span class="empty-icon">🔔</span>
-            <span class="empty-title">No notifications</span>
+          <div class="rounded-[1.25rem] bg-black/50 border border-white/5 p-5 text-center">
+            <p class="font-headline font-black text-xs uppercase tracking-[0.18em] text-white mb-2">No notifications</p>
+            <p class="text-zinc-500 text-sm">You are all caught up.</p>
           </div>
-        ` : notifications.slice(0, 10).map(n => `
-          <div class="card card-compact ${n.read ? '' : 'hover-lift'}" style="${n.read ? 'opacity: 0.6;' : 'border-left: 3px solid var(--accent-blue);'}">
-            <div class="flex-between" style="margin-bottom: 4px;">
-              <span class="font-semibold text-sm">${n.title}</span>
-              <span class="text-xs text-tertiary">${Format.relativeTime(n.time)}</span>
+        ` : notifications.slice(0, 10).map(notification => `
+          <div class="rounded-[1.25rem] border ${notification.read ? 'border-white/5 opacity-70' : 'border-primary/20 bg-primary/5'} p-4">
+            <div class="flex items-center justify-between gap-3 mb-1">
+              <span class="font-headline font-black text-xs uppercase tracking-[0.12em]">${notification.title}</span>
+              <span class="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.16em]">${Format.relativeTime(notification.time)}</span>
             </div>
-            <p class="text-sm text-secondary">${n.message}</p>
+            <p class="text-sm text-zinc-300">${notification.message}</p>
           </div>
         `).join('')}
       </div>
@@ -184,20 +183,15 @@ const App = {
 
     document.body.appendChild(panel);
 
-    // Mark all read
     DOM.$('#btn-mark-all-read', panel)?.addEventListener('click', () => {
-      const updated = notifications.map(n => ({ ...n, read: true }));
-      AppState.set('notifications', updated);
-      const badge = DOM.$('#notif-count');
-      if (badge) { badge.textContent = '0'; badge.style.display = 'none'; }
+      AppState.markAllNotificationsRead();
       panel.remove();
       DOM.toast('All notifications marked as read', 'info');
     });
 
-    // Close on outside click
     setTimeout(() => {
-      const handler = (e) => {
-        if (!panel.contains(e.target) && e.target !== DOM.$('#btn-notifications')) {
+      const handler = event => {
+        if (!panel.contains(event.target) && !event.target.closest('#btn-notifications')) {
           panel.remove();
           document.removeEventListener('click', handler);
         }
@@ -212,64 +206,78 @@ const App = {
    */
   _showSettings() {
     const existing = DOM.$('#settings-panel');
-    if (existing) { existing.remove(); return; }
+    if (existing) {
+      existing.remove();
+      return;
+    }
 
+    const preferences = AppState.get('preferences');
     const panel = DOM.create('div', {
       id: 'settings-panel',
-      className: 'card',
+      className: 'glass-cyber rounded-[1.5rem] border border-white/10 text-white',
       role: 'dialog',
       'aria-label': 'Settings',
       style: {
         position: 'fixed',
-        top: '60px',
+        top: '68px',
         right: '12px',
+        width: '300px',
         zIndex: '1000',
-        width: '280px',
         padding: '16px'
       }
     });
 
     panel.innerHTML = `
-      <h3 style="font-size: var(--text-md); margin-bottom: var(--space-4);">⚙️ Settings</h3>
-      <div class="flex-col gap-4">
-        <div class="flex-between">
+      <h3 class="font-headline font-black text-sm uppercase tracking-[0.18em] mb-4">Settings</h3>
+      <div class="space-y-3">
+        <label class="flex items-center justify-between gap-4 rounded-[1.25rem] bg-black/50 border border-white/5 px-4 py-3 cursor-pointer">
           <span class="text-sm">Push Notifications</span>
-          <label class="toggle">
-            <input type="checkbox" checked id="setting-push">
-            <span class="toggle-track"></span>
-            <span class="toggle-thumb"></span>
-          </label>
-        </div>
-        <div class="flex-between">
+          <span class="flex items-center gap-2">
+            <input type="checkbox" ${preferences.notificationsEnabled ? 'checked' : ''} id="setting-push">
+            <span class="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-400">On</span>
+          </span>
+        </label>
+        <label class="flex items-center justify-between gap-4 rounded-[1.25rem] bg-black/50 border border-white/5 px-4 py-3 cursor-pointer">
           <span class="text-sm">Sound Effects</span>
-          <label class="toggle">
-            <input type="checkbox" checked id="setting-sound">
-            <span class="toggle-track"></span>
-            <span class="toggle-thumb"></span>
-          </label>
-        </div>
-        <div class="flex-between">
+          <span class="flex items-center gap-2">
+            <input type="checkbox" ${preferences.soundEnabled ? 'checked' : ''} id="setting-sound">
+            <span class="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-400">On</span>
+          </span>
+        </label>
+        <label class="flex items-center justify-between gap-4 rounded-[1.25rem] bg-black/50 border border-white/5 px-4 py-3 cursor-pointer">
           <span class="text-sm">Auto-refresh Data</span>
-          <label class="toggle">
-            <input type="checkbox" checked id="setting-refresh">
-            <span class="toggle-track"></span>
-            <span class="toggle-thumb"></span>
-          </label>
-        </div>
-        <div class="divider"></div>
-        <div class="text-xs text-tertiary text-center">
-          VenueFlow v1.0.0 · Built with ❤️
-          <br>Powered by Google Services
+          <span class="flex items-center gap-2">
+            <input type="checkbox" ${preferences.autoRefresh ? 'checked' : ''} id="setting-refresh">
+            <span class="text-[10px] font-black uppercase tracking-[0.16em] text-zinc-400">On</span>
+          </span>
+        </label>
+        <div class="rounded-[1.25rem] bg-black/40 border border-white/5 px-4 py-3 text-xs text-zinc-400 text-center">
+          VenueFlow v1.0.0
+          <br>Powered by Google services and local fallbacks
         </div>
       </div>
     `;
 
     document.body.appendChild(panel);
 
-    // Close on outside click
+    DOM.$('#setting-push', panel)?.addEventListener('change', async event => {
+      AppState.updatePreferences({ notificationsEnabled: event.target.checked });
+      if (event.target.checked) {
+        await FirebaseService.requestNotificationPermission();
+      }
+    });
+
+    DOM.$('#setting-sound', panel)?.addEventListener('change', event => {
+      AppState.updatePreferences({ soundEnabled: event.target.checked });
+    });
+
+    DOM.$('#setting-refresh', panel)?.addEventListener('change', event => {
+      AppState.updatePreferences({ autoRefresh: event.target.checked });
+    });
+
     setTimeout(() => {
-      const handler = (e) => {
-        if (!panel.contains(e.target) && e.target !== DOM.$('#btn-settings')) {
+      const handler = event => {
+        if (!panel.contains(event.target) && !event.target.closest('#btn-settings')) {
           panel.remove();
           document.removeEventListener('click', handler);
         }
@@ -286,7 +294,7 @@ const App = {
     if ('serviceWorker' in navigator) {
       try {
         const registration = await navigator.serviceWorker.register('sw.js');
-        console.log('📦 Service Worker registered:', registration.scope);
+        console.log('Service Worker registered:', registration.scope);
       } catch (error) {
         console.warn('Service Worker registration failed:', error.message);
       }
@@ -294,5 +302,4 @@ const App = {
   }
 };
 
-// ── Start the app when DOM is ready ──
 document.addEventListener('DOMContentLoaded', () => App.init());

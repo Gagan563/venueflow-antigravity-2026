@@ -1,118 +1,258 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="description" content="VenueFlow — Smart stadium experience platform with real-time crowd intelligence, AI concierge, and seamless event coordination.">
+  <meta name="description" content="Stadium Live — Cyber-Pulse Experience">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
-  <meta name="theme-color" content="#030508">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>VenueFlow — Smart Stadium Experience</title>
+  <meta name="theme-color" content="#050505">
+  <title>STADIUM_ZONE - Cyber-Pulse</title>
 
   <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json">
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 
-  <!-- Google Maps -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBDaeWicvigtP9xPv919E-RNoxfvC-Hqik&libraries=visualization,places&callback=Function.prototype" async defer></script>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#BF00FF", // Fuchsia neon
+            "secondary": "#00FBFF", // Cyan neon
+            "background": "#050505",
+            "surface": "#0E0E0E",
+            "surface-variant": "#1A1A1A",
+            "on-surface": "#FFFFFF",
+            "on-primary": "#000000",
+            "error": "#FF3D00"
+          },
+          borderRadius: {
+            "DEFAULT": "1.5rem",
+            "lg": "2.5rem",
+            "xl": "4rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            "headline": ["Space Grotesk", "sans-serif"],
+            "body": ["Be Vietnam Pro", "sans-serif"],
+            "label": ["Space Grotesk", "sans-serif"]
+          }
+        },
+      }
+    }
+  </script>
 
-  <!-- Firebase -->
+  <!-- Custom Globals -->
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .neon-pulse-fuchsia {
+      box-shadow: 0 0 15px rgba(191, 0, 255, 0.4);
+      border: 1px solid rgba(191, 0, 255, 0.3);
+    }
+    .neon-pulse-cyan {
+      box-shadow: 0 0 15px rgba(0, 251, 255, 0.4);
+      border: 1px solid rgba(0, 251, 255, 0.3);
+    }
+    .glass-cyber {
+      background: rgba(10, 10, 10, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .kinetic-gradient {
+      background: linear-gradient(135deg, #BF00FF 0%, #7000FF 100%);
+    }
+    body {
+      background-color: #050505;
+      color: #ffffff;
+      min-height: 100dvh;
+    }
+    .text-neon-cyan {
+      color: #00FBFF;
+      text-shadow: 0 0 10px rgba(0, 251, 255, 0.5);
+    }
+    .text-neon-fuchsia {
+      color: #BF00FF;
+      text-shadow: 0 0 10px rgba(191, 0, 255, 0.5);
+    }
+
+    /* View Transitions */
+    .view { display: none; animation: fade-in 0.3s ease-out; }
+    .view.active { display: block; }
+    @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Custom Animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.85); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(100%); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in-up { animation: fadeInUp 0.5s ease-out both; }
+    .animate-fade-in-down { animation: fadeInDown 0.5s ease-out both; }
+    .animate-scale-in { animation: scaleIn 0.4s ease-out both; }
+    .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+    /* Page Container */
+    .page-container {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      height: 100dvh;
+    }
+
+    /* No Scrollbar Utility */
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+
+    /* Typing Indicator */
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 12px 16px;
+    }
+    .typing-indicator .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #BF00FF;
+      animation: typingBounce 1.2s infinite ease-in-out;
+    }
+    .typing-indicator .dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30% { transform: translateY(-8px); opacity: 1; }
+    }
+
+    /* Heat Map Overlay for Map View */
+    .heat-map-overlay {
+      background:
+        radial-gradient(ellipse at 30% 40%, rgba(239,68,68,0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 60%, rgba(251,146,60,0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 30%, rgba(16,185,129,0.08) 0%, transparent 50%);
+    }
+
+    /* Toast */
+    #toast-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .toast {
+      background: rgba(10, 10, 10, 0.9);
+      backdrop-filter: blur(10px);
+      border-left: 4px solid #00FBFF;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 600;
+      box-shadow: 0 4px 20px rgba(0, 251, 255, 0.2);
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .toast-success { border-left-color: #10B981; }
+    .toast-warning { border-left-color: #FBBF24; }
+    .toast-danger { border-left-color: #EF4444; }
+  </style>
+
+  <!-- External JS -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-
-  <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/variables.css">
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/components.css">
-  <link rel="stylesheet" href="css/layout.css">
-  <link rel="stylesheet" href="css/animations.css">
 </head>
-<body>
-  <!-- Skip to content for accessibility -->
-  <a href="#main-content" class="sr-only" id="skip-nav">Skip to main content</a>
+<body class="bg-background text-on-surface font-body selection:bg-primary selection:text-on-primary">
 
   <div id="app">
-    <!-- Top Header -->
-    <header class="top-header" role="banner">
-      <div class="header-brand">
-        <div class="header-logo" aria-hidden="true">⚡</div>
-        <div>
-          <div class="header-title">VenueFlow</div>
-          <div class="header-subtitle" id="header-venue-name">MetLife Stadium</div>
+    <!-- TopAppBar -->
+    <header class="fixed top-0 w-full z-50 bg-zinc-950/60 backdrop-blur-xl border-b-2 border-fuchsia-500/20 shadow-[0_0_20px_rgba(224,141,255,0.15)] h-16 px-6 flex justify-between items-center">
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 rounded-full ring-2 ring-fuchsia-500 p-0.5 overflow-hidden active:scale-95 duration-150 cursor-pointer">
+          <img alt="Profile HUD" class="w-full h-full object-cover rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2jskqogvZ51kVXz4K9H2Nv5E3XwaQJztVXdz-2uZ2S0EyypiKT3S3w1CbIxsxT70bG9PHA1hWG0LyOX5Nm5sTaP0bIR9odpEWyKUkJIzRaLIOPfJ1d0qAN9Hz6dSj0nVwRZ9iDPhrny5LsORmTuCY1iMmY5_6zB3Q0eWghwFxbYIjk4qV86QCW_Sl-rxuIj8oCHsIzyemfZi2OX8G0dgvvX-cTx-lIPVny38bdM4wYzW_AcoiOeGB847Pbew1Abv-n2B-Dz0xh39c">
         </div>
+        <h1 class="text-2xl font-black italic text-fuchsia-500 tracking-widest font-['Space_Grotesk'] uppercase">STADIUM_ZONE</h1>
       </div>
-      <div class="header-actions">
-        <button class="btn btn-icon-sm btn-ghost notification-btn" id="btn-notifications" aria-label="Notifications" title="View notifications">
-          🔔
-          <span class="notif-badge" id="notif-count" aria-label="3 unread notifications">3</span>
+      <div class="flex items-center gap-2">
+        <button class="relative w-10 h-10 rounded-full bg-zinc-900/60 border border-white/10 text-zinc-400 hover:text-cyan-400 transition-colors active:scale-95 duration-150 flex items-center justify-center" id="btn-notifications" aria-label="Open notifications">
+          <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+          <span class="hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-primary text-black text-[10px] font-black items-center justify-center px-1" id="notif-count">0</span>
         </button>
-        <button class="btn btn-icon-sm btn-ghost" id="btn-settings" aria-label="Settings" title="Settings">
-          ⚙️
+        <button class="w-10 h-10 rounded-full bg-zinc-900/60 border border-white/10 text-zinc-400 hover:text-cyan-400 transition-colors active:scale-95 duration-150 flex items-center justify-center" id="btn-accessibility" aria-label="Open accessibility settings">
+          <span class="material-symbols-outlined">universal_local</span>
         </button>
-        <button class="btn btn-icon-sm btn-ghost" id="btn-accessibility" aria-label="Accessibility options" title="Accessibility">
-          ♿
+        <button class="w-10 h-10 rounded-full bg-zinc-900/60 border border-white/10 text-zinc-400 hover:text-cyan-400 transition-colors active:scale-95 duration-150 flex items-center justify-center" id="btn-settings" aria-label="Open app settings">
+          <span class="material-symbols-outlined">settings</span>
         </button>
       </div>
     </header>
 
     <!-- Main Content -->
     <main class="page-container" id="main-content" role="main">
-      <!-- Home View -->
-      <div class="view active" id="view-home" role="tabpanel" aria-label="Home Dashboard"></div>
-
-      <!-- Map View -->
-      <div class="view" id="view-map" role="tabpanel" aria-label="Live Crowd Map"></div>
-
-      <!-- Queue View -->
-      <div class="view" id="view-queue" role="tabpanel" aria-label="Queue Status"></div>
-
-      <!-- Concierge View -->
-      <div class="view" id="view-concierge" role="tabpanel" aria-label="AI Concierge"></div>
-
-      <!-- Order View -->
-      <div class="view" id="view-order" role="tabpanel" aria-label="Food & Drinks Order"></div>
-
-      <!-- Events View -->
-      <div class="view" id="view-events" role="tabpanel" aria-label="Event Timeline"></div>
-
-      <!-- Emergency View -->
-      <div class="view" id="view-emergency" role="tabpanel" aria-label="Emergency Information"></div>
+      <div class="view active" id="view-home"></div>
+      <div class="view" id="view-map"></div>
+      <div class="view" id="view-queue"></div>
+      <div class="view" id="view-order"></div>
+      <!-- Ensure events is here -->
+      <div class="view" id="view-events"></div>
+      <!-- Ensure emergency and concierge are here although launched via FAB -->
+      <div class="view" id="view-emergency"></div>
+      <div class="view" id="view-concierge"></div>
+      <!-- New wallet view -->
+      <div class="view" id="view-wallet"></div>
     </main>
 
-    <!-- Bottom Navigation -->
-    <nav class="bottom-nav" role="tablist" aria-label="Main navigation">
-      <button class="nav-item active" data-view="home" role="tab" aria-selected="true" aria-controls="view-home" id="nav-home">
-        <span class="nav-icon" aria-hidden="true">🏠</span>
-        <span class="nav-label">Home</span>
-      </button>
-      <button class="nav-item" data-view="map" role="tab" aria-selected="false" aria-controls="view-map" id="nav-map">
-        <span class="nav-icon" aria-hidden="true">🗺️</span>
-        <span class="nav-label">Map</span>
-      </button>
-      <button class="nav-item" data-view="queue" role="tab" aria-selected="false" aria-controls="view-queue" id="nav-queue">
-        <span class="nav-icon" aria-hidden="true">⏱️</span>
-        <span class="nav-label">Queues</span>
-      </button>
-      <button class="nav-item" data-view="concierge" role="tab" aria-selected="false" aria-controls="view-concierge" id="nav-concierge">
-        <span class="nav-icon" aria-hidden="true">🤖</span>
-        <span class="nav-label">AI Help</span>
-      </button>
-      <button class="nav-item" data-view="order" role="tab" aria-selected="false" aria-controls="view-order" id="nav-order">
-        <span class="nav-icon" aria-hidden="true">🍔</span>
-        <span class="nav-label">Order</span>
-      </button>
-      <button class="nav-item nav-emergency" data-view="emergency" role="tab" aria-selected="false" aria-controls="view-emergency" id="nav-emergency">
-        <span class="nav-icon" aria-hidden="true">🚨</span>
-        <span class="nav-label">SOS</span>
-      </button>
+    <!-- BottomNavBar -->
+    <nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pt-3 pb-8 bg-zinc-950/80 backdrop-blur-2xl z-50 rounded-t-[3rem] shadow-[0_-10px_40px_rgba(0,251,251,0.1)]">
+      <div class="nav-item flex flex-col items-center justify-center text-zinc-500 opacity-70 hover:opacity-100 hover:text-cyan-300 transition-all cursor-pointer active:animate-pulse active:scale-110 duration-300" data-view="home" id="nav-home">
+        <span class="material-symbols-outlined mb-1">home</span>
+        <span class="font-['Be_Vietnam_Pro'] text-[10px] font-bold uppercase tracking-widest">HOME</span>
+      </div>
+      <div class="nav-item flex flex-col items-center justify-center text-zinc-500 opacity-70 hover:opacity-100 hover:text-cyan-300 transition-all cursor-pointer active:animate-pulse active:scale-110 duration-300" data-view="map" id="nav-map">
+        <span class="material-symbols-outlined mb-1">map</span>
+        <span class="font-['Be_Vietnam_Pro'] text-[10px] font-bold uppercase tracking-widest">MAP</span>
+      </div>
+      <div class="nav-item flex flex-col items-center justify-center text-zinc-500 opacity-70 hover:opacity-100 hover:text-cyan-300 transition-all cursor-pointer active:animate-pulse active:scale-110 duration-300" data-view="order" id="nav-order">
+        <span class="material-symbols-outlined mb-1">local_mall</span>
+        <span class="font-['Be_Vietnam_Pro'] text-[10px] font-bold uppercase tracking-widest">ORDER</span>
+      </div>
+      <div class="nav-item flex flex-col items-center justify-center text-zinc-500 opacity-70 hover:opacity-100 hover:text-cyan-300 transition-all cursor-pointer active:animate-pulse active:scale-110 duration-300" data-view="queue" id="nav-queue">
+        <span class="material-symbols-outlined mb-1">leaderboard</span>
+        <span class="font-['Be_Vietnam_Pro'] text-[10px] font-bold uppercase tracking-widest">STATS</span>
+      </div>
+      <div class="nav-item flex flex-col items-center justify-center text-zinc-500 opacity-70 hover:opacity-100 hover:text-cyan-300 transition-all cursor-pointer active:animate-pulse active:scale-110 duration-300" data-view="wallet" id="nav-wallet">
+        <span class="material-symbols-outlined mb-1">account_balance_wallet</span>
+        <span class="font-['Be_Vietnam_Pro'] text-[10px] font-bold uppercase tracking-widest">WALLET</span>
+      </div>
     </nav>
 
     <!-- Toast Container -->
@@ -120,6 +260,9 @@
   </div>
 
   <!-- JavaScript Modules -->
+  <script>
+    window.__VENUEFLOW_RUNTIME__ = window.__VENUEFLOW_RUNTIME__ || {};
+  </script>
   <script src="js/utils/dom.js"></script>
   <script src="js/utils/format.js"></script>
   <script src="js/utils/accessibility.js"></script>
@@ -136,7 +279,25 @@
   <script src="js/views/order.js"></script>
   <script src="js/views/events.js"></script>
   <script src="js/views/emergency.js"></script>
+  <script src="js/views/wallet.js"></script>
   <script src="js/router.js"></script>
   <script src="js/app.js"></script>
+
+  <style>
+    /* Styling for active Nav Item based on JS Router toggling .active */
+    .nav-item.active {
+      background: rgba(191, 0, 255, 0.2) !important;
+      color: #BF00FF !important;
+      border-radius: 9999px;
+      padding: 0.5rem 1.25rem;
+      box-shadow: 0 0 0 1px rgba(191, 0, 255, 0.5);
+      animation: pulse 2s infinite;
+      opacity: 1 !important;
+    }
+    .nav-item.active .material-symbols-outlined {
+      color: #BF00FF !important;
+      font-variation-settings: 'FILL' 1 !important;
+    }
+  </style>
 </body>
 </html>

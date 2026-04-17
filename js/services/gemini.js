@@ -12,11 +12,24 @@ const GeminiService = {
   available: true,
 
   /**
+   * Check whether Gemini is configured for live API calls
+   * @returns {boolean}
+   */
+  isConfigured() {
+    return Boolean(Config.gemini.apiKey);
+  },
+
+  /**
    * Send a message to Gemini AI and get a response
    * @param {string} userMessage - User's message
    * @returns {Promise<string>} AI response
    */
   async chat(userMessage) {
+    if (!this.isConfigured()) {
+      this.available = false;
+      return this._getFallbackResponse(userMessage);
+    }
+
     // Build context-aware prompt with current venue state
     const context = this._buildContext();
     
@@ -28,6 +41,7 @@ const GeminiService = {
 
     try {
       const response = await this._callGeminiAPI(context, userMessage);
+      this.available = true;
       
       // Add response to history
       this.conversationHistory.push({
@@ -37,6 +51,7 @@ const GeminiService = {
 
       return response;
     } catch (error) {
+      this.available = false;
       console.warn('Gemini API error, using fallback:', error.message);
       return this._getFallbackResponse(userMessage);
     }
@@ -150,8 +165,8 @@ Cart items: ${AppState.getCartCount()}
     const shortestRestroom = [...queues].filter(q => q.type === 'restroom').sort((a, b) => a.waitMinutes - b.waitMinutes)[0];
 
     // Smart keyword matching
-    if (msg.includes('food') || msg.includes('eat') || msg.includes('hungry') || msg.includes('burger') || msg.includes('pizza')) {
-      return `🍔 Great question! Right now, the shortest food queue is at **${shortestFood.name}** with just a **${shortestFood.waitMinutes} minute** wait.\n\nI'd recommend heading there quickly — the queue at Pizza Corner is ${queues.find(q => q.id === 'food-3')?.waitMinutes} minutes and rising!\n\nYou can also pre-order from the **Order** tab to skip the line entirely. 😊`;
+    if (msg.includes('food') || msg.includes('eat') || msg.includes('hungry') || msg.includes('biryani') || msg.includes('pizza') || msg.includes('samosa') || msg.includes('chaat')) {
+      return `🍛 Great question! Right now, the shortest food queue is at **${shortestFood.name}** with just a **${shortestFood.waitMinutes} minute** wait.\n\nI'd recommend heading there quickly — the queue at Pizza Point is ${queues.find(q => q.id === 'food-3')?.waitMinutes} minutes and rising!\n\nYou can also pre-order from the **Order** tab to skip the line entirely. 😊`;
     }
 
     if (msg.includes('bathroom') || msg.includes('restroom') || msg.includes('toilet') || msg.includes('washroom')) {
@@ -170,21 +185,21 @@ Cart items: ${AppState.getCartCount()}
     }
 
     if (msg.includes('help') || msg.includes('what can') || msg.includes('features')) {
-      return `👋 I'm your **VenueFlow AI Concierge**! Here's what I can help with:\n\n🗺️ **Navigate** — Find your way around the venue\n🍔 **Food** — Find shortest food queues & pre-order\n🚻 **Restrooms** — Nearest available restrooms\n📊 **Crowd Info** — Real-time crowd density\n⏱️ **Wait Times** — Queue estimates for everything\n📅 **Schedule** — Event timeline & upcoming activities\n🚨 **Emergency** — Safety info & evacuation routes\n\nJust ask me anything! 😊`;
+      return `👋 I'm your **VenueFlow AI Concierge**! Here's what I can help with:\n\n🗺️ **Navigate** — Find your way around the venue\n🍛 **Food** — Find shortest food queues & pre-order\n🚻 **Restrooms** — Nearest available restrooms\n📊 **Crowd Info** — Real-time crowd density\n⏱️ **Wait Times** — Queue estimates for everything\n📅 **Schedule** — Event timeline & upcoming activities\n🚨 **Emergency** — Safety info & evacuation routes\n\nJust ask me anything! 😊`;
     }
 
     if (msg.includes('emergency') || msg.includes('help me') || msg.includes('danger') || msg.includes('medical')) {
-      return `🚨 **Emergency Resources:**\n\n🛡️ Stadium Security: **201-555-0100**\n🚑 Medical Emergency: **911**\n🏥 First Aid Stations: Gate A & Gate D\n\nThe nearest First Aid station to your Section ${Config.venue.userSeat.section} is at **Gate A** (~2 min walk).\n\nDo you need me to show you the way to the nearest exit or first aid station?`;
+      return `🚨 **Emergency Resources:**\n\n🛡️ Stadium Security: **079-2685-0100**\n🚑 Emergency Helpline: **112**\n🏥 Ambulance: **108**\n🏥 First Aid Stations: Gate A & Gate D\n\nThe nearest First Aid station to your Section ${Config.venue.userSeat.section} is at **Gate A** (~2 min walk).\n\nDo you need me to show you the way to the nearest exit or first aid station?`;
     }
 
-    if (msg.includes('event') || msg.includes('schedule') || msg.includes('kickoff') || msg.includes('game') || msg.includes('start')) {
+    if (msg.includes('event') || msg.includes('schedule') || msg.includes('match') || msg.includes('game') || msg.includes('start') || msg.includes('ipl')) {
       const countdown = Format.countdown(Config.venue.eventTime);
-      return `🏈 **${Config.venue.currentEvent}**\n\n⏰ Kickoff in: **${countdown.hours}h ${countdown.minutes}m**\n\nUpcoming:\n${Config.schedule.filter(e => e.status === 'upcoming').slice(0, 3).map(e => `• ${e.title} — ${Format.time(e.time)}`).join('\n')}\n\nWant me to add the kickoff to your Google Calendar?`;
+      return `🏏 **${Config.venue.currentEvent}**\n\n⏰ First ball in: **${countdown.hours}h ${countdown.minutes}m**\n\nUpcoming:\n${Config.schedule.filter(e => e.status === 'upcoming').slice(0, 3).map(e => `• ${e.title} — ${Format.time(e.time)}`).join('\n')}\n\nWant me to add the match to your Google Calendar?`;
     }
 
     if (msg.includes('seat') || msg.includes('section') || msg.includes('where am i')) {
       const seat = Config.venue.userSeat;
-      return `📍 You're in **${Format.seat(seat.section, seat.row, seat.seat)}** (Lower Bowl)\n\nNearest amenities:\n🍔 Gridiron Grill — 1 min walk\n🚻 Restrooms (Sec 130) — 2 min walk\n🏥 First Aid — Gate A, 3 min walk\n\nWant me to navigate you somewhere?`;
+      return `📍 You're in **${Format.seat(seat.section, seat.row, seat.seat)}** (Lower Bowl)\n\nNearest amenities:\n🍛 Desi Dhaba — 1 min walk\n🚻 Restrooms (Sec 130) — 2 min walk\n🏥 First Aid — Gate A, 3 min walk\n\nWant me to navigate you somewhere?`;
     }
 
     // Default response

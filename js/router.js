@@ -22,7 +22,8 @@ const Router = {
       concierge: ConciergeView,
       order: OrderView,
       events: EventsView,
-      emergency: EmergencyView
+      emergency: EmergencyView,
+      wallet: WalletView
     };
 
     // Listen for hash changes

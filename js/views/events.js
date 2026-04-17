@@ -1,6 +1,6 @@
 /* ============================================
    VenueFlow Event Timeline View
-   Schedule, countdowns, Google Calendar sync
+   Schedule, countdowns, calendar sync
    ============================================ */
 
 const EventsView = {
@@ -14,234 +14,318 @@ const EventsView = {
     const container = DOM.$('#view-events');
     if (!container) return;
 
-    const schedule = Config.schedule;
-    const now = Date.now();
+    const timeline = this._getTimeline();
+    const primaryEvent = timeline.find(event => event.type === 'main') || timeline.find(event => event.phase === 'next') || timeline[0];
+    const nextEvent = timeline.find(event => event.phase === 'next') || primaryEvent;
 
     container.innerHTML = `
-      <div class="page-header animate-fade-in-up">
-        <h1 class="page-title">📅 Event Timeline</h1>
-        <p class="page-desc">${Config.venue.currentEvent}</p>
-      </div>
-
-      <!-- Calendar Sync -->
-      <div class="card animate-fade-in-up" style="margin-bottom: var(--space-5); animation-delay: 100ms;">
-        <div class="flex-between">
-          <div>
-            <div class="font-semibold">📅 Sync to Google Calendar</div>
-            <div class="text-sm text-tertiary">Add all events to your calendar</div>
+      <div class="relative min-h-screen pt-24 pb-32 px-4 sm:px-6 w-full max-w-md mx-auto space-y-6 flex flex-col">
+        <section class="glass-cyber rounded-[2.5rem] p-6 border-primary/20 animate-fade-in-up">
+          <div class="flex items-start justify-between gap-4 mb-5">
+            <div>
+              <p class="text-secondary font-bold text-[10px] tracking-[0.2em] uppercase mb-2">Live Schedule</p>
+              <h1 class="text-3xl font-black italic tracking-tighter uppercase font-headline">
+                Event<span class="text-primary text-neon-fuchsia">_Timeline</span>
+              </h1>
+              <p class="text-zinc-400 text-xs font-medium mt-3">
+                ${Config.venue.currentEvent}
+              </p>
+            </div>
+            <div class="text-right shrink-0">
+              <p class="text-zinc-500 text-[9px] font-bold uppercase tracking-[0.18em]">Up Next</p>
+              <p class="font-headline font-black text-sm text-white uppercase max-w-28 leading-tight">${nextEvent.title}</p>
+              <p class="text-secondary text-[10px] font-bold mt-1">${Format.time(nextEvent.time)}</p>
+            </div>
           </div>
-          <button class="btn btn-primary btn-sm" id="btn-sync-calendar" aria-label="Add all events to Google Calendar">
-            Add All
-          </button>
-        </div>
-      </div>
 
-      <!-- Main Event Highlight -->
-      <div class="card animate-fade-in-up" style="background: var(--gradient-brand); border: none; margin-bottom: var(--space-5); animation-delay: 200ms; text-align: center; padding: var(--space-8) var(--space-5);">
-        <div style="font-size: 2.5rem; margin-bottom: var(--space-3);">🏈</div>
-        <h2 style="color: white; font-size: var(--text-xl); margin-bottom: var(--space-2);">${Config.venue.currentEvent}</h2>
-        <p style="color: rgba(255,255,255,0.7); font-size: var(--text-sm); margin-bottom: var(--space-4);">${Config.venue.name} · ${Config.venue.location}</p>
-        
-        <!-- Countdown -->
-        <div class="flex-center gap-4" id="events-countdown" style="margin-bottom: var(--space-3);">
-          ${this._renderCountdownDigits()}
-        </div>
-        
-        <button class="btn btn-sm" style="background: rgba(255,255,255,0.2); color: white; margin-top: var(--space-2);" id="btn-add-main-event" aria-label="Add kickoff to Google Calendar">
-          📅 Add to Calendar
-        </button>
-      </div>
+          <div class="bg-black/50 border border-white/5 rounded-[2rem] p-4 mb-5">
+            <div class="flex items-center justify-between gap-3 mb-3">
+              <div>
+                <p class="text-zinc-500 text-[9px] font-bold uppercase tracking-[0.18em]">Kickoff Countdown</p>
+                <p class="font-headline font-black text-lg uppercase text-white">${primaryEvent.title}</p>
+              </div>
+              <span class="px-3 py-1 rounded-full text-[9px] font-black tracking-[0.18em] uppercase border border-primary/30 bg-primary/10 text-primary">
+                ${primaryEvent.phase === 'completed' ? 'Completed' : primaryEvent.phase === 'next' ? 'Live next' : 'Upcoming'}
+              </span>
+            </div>
+            <div class="flex justify-center gap-2" id="events-countdown">
+              ${this._renderCountdownDigits(primaryEvent.time)}
+            </div>
+          </div>
 
-      <!-- Timeline -->
-      <div class="section">
-        <div class="section-header">
-          <h2 class="section-title">🕐 Full Schedule</h2>
-          <span class="badge badge-brand">${schedule.length} events</span>
-        </div>
-        
-        <div class="flex-col" style="position: relative;">
-          <!-- Timeline line -->
-          <div style="position: absolute; left: 22px; top: 0; bottom: 0; width: 2px; background: var(--glass-border);"></div>
-          
-          ${schedule.map((event, i) => {
-            const isCompleted = event.status === 'completed';
-            const isUpcoming = event.status === 'upcoming';
-            const isNext = isUpcoming && (i === 0 || schedule[i - 1].status === 'completed');
-            const eventTime = new Date(event.time);
-            const timeStr = Format.time(event.time);
-            const relativeStr = isCompleted ? Format.relativeTime(event.time) : '';
-            const countdown = isUpcoming ? Format.countdown(event.time) : null;
+          <div class="grid grid-cols-2 gap-3">
+            <button class="bg-primary text-black rounded-full py-3 px-4 font-headline font-black text-[10px] tracking-[0.18em] uppercase flex items-center justify-center gap-2 active:scale-95 transition-transform" id="btn-sync-calendar">
+              <span class="material-symbols-outlined text-sm">event_available</span>
+              Sync All
+            </button>
+            <button class="bg-zinc-900 border border-white/10 text-white rounded-full py-3 px-4 font-headline font-black text-[10px] tracking-[0.18em] uppercase flex items-center justify-center gap-2 hover:bg-zinc-800 transition-colors" id="btn-add-main-event">
+              <span class="material-symbols-outlined text-sm">event_note</span>
+              Add Match
+            </button>
+            <button class="bg-zinc-900 border border-white/10 text-white rounded-full py-3 px-4 font-headline font-black text-[10px] tracking-[0.18em] uppercase flex items-center justify-center gap-2 hover:bg-zinc-800 transition-colors" id="btn-download-main-event">
+              <span class="material-symbols-outlined text-sm">download</span>
+              Download ICS
+            </button>
+            <button class="bg-zinc-900 border border-white/10 text-white rounded-full py-3 px-4 font-headline font-black text-[10px] tracking-[0.18em] uppercase flex items-center justify-center gap-2 hover:bg-zinc-800 transition-colors" id="btn-share-main-event">
+              <span class="material-symbols-outlined text-sm">share</span>
+              Share Match
+            </button>
+          </div>
+        </section>
 
-            return `
-              <div class="animate-fade-in-up" style="animation-delay: ${(i + 1) * 80}ms; position: relative; padding-left: 52px; padding-bottom: var(--space-5);">
-                <!-- Timeline dot -->
-                <div style="
-                  position: absolute;
-                  left: 14px;
-                  top: 4px;
-                  width: 18px;
-                  height: 18px;
-                  border-radius: 50%;
-                  background: ${isCompleted ? 'var(--success)' : isNext ? 'var(--accent-blue)' : 'var(--bg-tertiary)'};
-                  border: 3px solid ${isCompleted ? 'var(--success)' : isNext ? 'var(--accent-blue)' : 'var(--glass-border)'};
-                  ${isNext ? 'box-shadow: 0 0 10px rgba(59,130,246,0.4); animation: pulse-scale 2s infinite;' : ''}
-                  z-index: 1;
-                ">
-                  ${isCompleted ? '<span style="position:absolute;top:-1px;left:1px;font-size:10px;">✓</span>' : ''}
-                </div>
-                
-                <div class="card card-compact ${isCompleted ? '' : 'hover-lift'}" style="${isCompleted ? 'opacity: 0.6;' : ''} ${isNext ? 'border-color: var(--accent-blue); background: var(--accent-blue-dim);' : ''}">
-                  <div class="flex-between" style="margin-bottom: var(--space-2);">
-                    <div>
-                      <div class="font-semibold">${event.title}</div>
-                      <div class="flex-row gap-2" style="margin-top: 4px;">
-                        <span class="text-xs text-tertiary">${timeStr}</span>
-                        ${isCompleted ? `<span class="text-xs text-tertiary">· ${relativeStr}</span>` : ''}
-                        ${isNext ? '<span class="badge badge-live badge-brand" style="font-size: 9px;">UP NEXT</span>' : ''}
+        <section class="animate-fade-in-up" style="animation-delay: 120ms;">
+          <div class="flex justify-between items-end mb-4 px-2">
+            <h2 class="font-headline font-black text-lg tracking-tight uppercase italic flex items-center gap-2">
+              <span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">calendar_month</span>
+              Timeline
+            </h2>
+            <span class="text-zinc-500 font-bold text-[9px] tracking-[0.18em] uppercase">${timeline.length} events</span>
+          </div>
+
+          <div class="space-y-3">
+            ${timeline.map((event, index) => {
+              const statusMeta = this._getStatusMeta(event.phase);
+
+              return `
+                <article class="glass-cyber rounded-[2rem] p-4 border ${statusMeta.borderClass} animate-fade-in-up" style="animation-delay: ${(index + 2) * 80}ms;">
+                  <div class="flex items-start gap-3">
+                    <div class="w-11 h-11 rounded-2xl border ${statusMeta.dotClass} flex items-center justify-center shrink-0 bg-black">
+                      <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">${statusMeta.icon}</span>
+                    </div>
+                    <div class="flex-grow min-w-0">
+                      <div class="flex items-start justify-between gap-3 mb-2">
+                        <div>
+                          <div class="flex items-center gap-2 mb-1 flex-wrap">
+                            <span class="px-2 py-1 rounded-full text-[8px] font-black tracking-[0.18em] uppercase border ${statusMeta.badgeClass}">
+                              ${statusMeta.label}
+                            </span>
+                            <span class="px-2 py-1 rounded-full text-[8px] font-black tracking-[0.18em] uppercase border border-white/10 text-zinc-400">
+                              ${event.type}
+                            </span>
+                          </div>
+                          <h3 class="font-headline font-black text-sm uppercase tracking-tight text-white leading-tight">${event.title}</h3>
+                        </div>
+                        <div class="text-right shrink-0">
+                          <p class="font-headline font-black text-sm ${statusMeta.textClass}">${Format.time(event.time)}</p>
+                          <p class="text-zinc-500 text-[9px] font-bold uppercase tracking-[0.18em]">${event.phase === 'completed' ? 'Done' : event.phase === 'next' ? 'Prepare now' : 'Upcoming'}</p>
+                        </div>
+                      </div>
+
+                      <div class="grid grid-cols-3 gap-2 mt-4">
+                        <button class="bg-zinc-900 border border-zinc-700 text-white rounded-full py-2 px-3 flex items-center justify-center gap-1 font-headline font-black text-[9px] tracking-[0.16em] hover:bg-zinc-800 transition-all uppercase" data-calendar-event="${index}">
+                          <span class="material-symbols-outlined text-[10px]">event_note</span>
+                          Cal
+                        </button>
+                        <button class="bg-zinc-900 border border-zinc-700 text-white rounded-full py-2 px-3 flex items-center justify-center gap-1 font-headline font-black text-[9px] tracking-[0.16em] hover:bg-zinc-800 transition-all uppercase" data-ics-event="${index}">
+                          <span class="material-symbols-outlined text-[10px]">download</span>
+                          ICS
+                        </button>
+                        <button class="bg-zinc-900 border border-zinc-700 text-white rounded-full py-2 px-3 flex items-center justify-center gap-1 font-headline font-black text-[9px] tracking-[0.16em] hover:bg-zinc-800 transition-all uppercase" data-share-event="${index}">
+                          <span class="material-symbols-outlined text-[10px]">share</span>
+                          Share
+                        </button>
                       </div>
                     </div>
-                    <div class="flex-col gap-1" style="align-items: flex-end;">
-                      <span class="badge ${this._getEventBadge(event.type)}">${event.type}</span>
-                      ${countdown && !countdown.expired ? `
-                        <span class="font-mono text-xs text-tertiary">${countdown.hours}:${countdown.minutes}:${countdown.seconds}</span>
-                      ` : ''}
-                    </div>
                   </div>
-                  
-                  ${!isCompleted ? `
-                    <div class="flex-row gap-2" style="margin-top: var(--space-2);">
-                      <button class="btn btn-ghost btn-sm" data-calendar-event="${i}" aria-label="Add ${event.title} to calendar" style="font-size: var(--text-xs);">
-                        📅 Calendar
-                      </button>
-                      <button class="btn btn-ghost btn-sm" data-share-event="${i}" aria-label="Share ${event.title}" style="font-size: var(--text-xs);">
-                        📤 Share
-                      </button>
-                    </div>
-                  ` : ''}
-                </div>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
+                </article>
+              `;
+            }).join('')}
+          </div>
+        </section>
 
-      <!-- Fun Fact -->
-      <div class="card card-compact animate-fade-in-up" style="border-left: 3px solid var(--accent-violet); margin-top: var(--space-4);">
-        <div class="font-medium text-sm" style="margin-bottom: var(--space-1);">🎲 Did You Know?</div>
-        <div class="text-sm text-tertiary">
-          ${this._getRandomFact()}
-        </div>
+        <section class="glass-cyber rounded-[2rem] p-5 border-secondary/20 bg-secondary/5 animate-fade-in-up" style="animation-delay: 220ms;">
+          <div class="flex items-start gap-3">
+            <div class="w-11 h-11 rounded-2xl bg-black border border-secondary/30 text-secondary flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">stadium</span>
+            </div>
+            <div>
+              <p class="text-secondary font-bold text-[10px] tracking-[0.18em] uppercase mb-2">Stadium Fact</p>
+              <p class="text-white text-sm leading-relaxed">${this._getRandomFact()}</p>
+            </div>
+          </div>
+        </section>
       </div>
     `;
 
-    this._bindEvents(container);
-    this._startCountdown();
+    this._bindEvents(container, primaryEvent);
+    this._startCountdown(primaryEvent.time);
+  },
+
+  /**
+   * Build timeline data with a derived current phase
+   * @returns {Array}
+   */
+  _getTimeline() {
+    const now = Date.now();
+    let nextAssigned = false;
+
+    return Config.schedule.map(event => {
+      const eventTime = new Date(event.time).getTime();
+      let phase = eventTime <= now ? 'completed' : 'upcoming';
+
+      if (!nextAssigned && eventTime > now) {
+        phase = 'next';
+        nextAssigned = true;
+      }
+
+      return { ...event, phase };
+    });
   },
 
   /**
    * Render countdown digits
+   * @param {string} targetDate - Event start date
+   * @returns {string}
    * @private
    */
-  _renderCountdownDigits() {
-    const cd = Format.countdown(Config.venue.eventTime);
-    const digitStyle = 'font-family: var(--font-mono); font-size: var(--text-2xl); font-weight: 700; color: white; background: rgba(255,255,255,0.15); padding: 8px 12px; border-radius: 8px; min-width: 48px; display: inline-block; text-align: center;';
-    const labelStyle = 'font-size: 9px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px;';
-    const separatorStyle = 'font-size: var(--text-2xl); color: rgba(255,255,255,0.4); margin-top: -8px;';
+  _renderCountdownDigits(targetDate) {
+    const countdown = Format.countdown(targetDate);
 
     return `
-      <div style="text-align: center;">
-        <div style="${digitStyle}" id="cd-hours">${cd.hours}</div>
-        <div style="${labelStyle}">Hours</div>
+      <div class="text-center min-w-[72px]">
+        <div class="font-headline font-black text-3xl text-white bg-white/10 border border-white/10 rounded-2xl px-3 py-3" id="cd-hours">${countdown.hours}</div>
+        <div class="text-[9px] font-bold text-zinc-500 uppercase tracking-[0.16em] mt-2">Hours</div>
       </div>
-      <span style="${separatorStyle}">:</span>
-      <div style="text-align: center;">
-        <div style="${digitStyle}" id="cd-minutes">${cd.minutes}</div>
-        <div style="${labelStyle}">Min</div>
+      <div class="font-headline font-black text-2xl text-zinc-600 self-center">:</div>
+      <div class="text-center min-w-[72px]">
+        <div class="font-headline font-black text-3xl text-white bg-white/10 border border-white/10 rounded-2xl px-3 py-3" id="cd-minutes">${countdown.minutes}</div>
+        <div class="text-[9px] font-bold text-zinc-500 uppercase tracking-[0.16em] mt-2">Min</div>
       </div>
-      <span style="${separatorStyle}">:</span>
-      <div style="text-align: center;">
-        <div style="${digitStyle}" id="cd-seconds">${cd.seconds}</div>
-        <div style="${labelStyle}">Sec</div>
+      <div class="font-headline font-black text-2xl text-zinc-600 self-center">:</div>
+      <div class="text-center min-w-[72px]">
+        <div class="font-headline font-black text-3xl text-primary text-neon-fuchsia bg-white/10 border border-white/10 rounded-2xl px-3 py-3" id="cd-seconds">${countdown.seconds}</div>
+        <div class="text-[9px] font-bold text-zinc-500 uppercase tracking-[0.16em] mt-2">Sec</div>
       </div>
     `;
   },
 
   /**
-   * Get badge class for event type
+   * Get visual status metadata for an event phase
+   * @param {string} phase - Derived phase
+   * @returns {Object}
    * @private
    */
-  _getEventBadge(type) {
-    const badges = {
-      logistics: 'badge-info',
-      entertainment: 'badge-brand',
-      ceremony: 'badge-warning',
-      main: 'badge-danger',
-      promo: 'badge-success'
+  _getStatusMeta(phase) {
+    if (phase === 'completed') {
+      return {
+        label: 'Completed',
+        icon: 'check_circle',
+        textClass: 'text-zinc-400',
+        borderClass: 'border-white/5',
+        dotClass: 'border-zinc-700 text-zinc-500',
+        badgeClass: 'bg-zinc-900 border-zinc-700 text-zinc-400'
+      };
+    }
+
+    if (phase === 'next') {
+      return {
+        label: 'Up Next',
+        icon: 'bolt',
+        textClass: 'text-primary',
+        borderClass: 'border-primary/20 bg-primary/5',
+        dotClass: 'border-primary/40 text-primary',
+        badgeClass: 'bg-primary/10 border-primary/30 text-primary'
+      };
+    }
+
+    return {
+      label: 'Upcoming',
+      icon: 'schedule',
+      textClass: 'text-secondary',
+      borderClass: 'border-secondary/10',
+      dotClass: 'border-secondary/30 text-secondary',
+      badgeClass: 'bg-secondary/10 border-secondary/30 text-secondary'
     };
-    return badges[type] || 'badge-info';
+  },
+
+  /**
+   * Build a calendar payload for a timeline event
+   * @param {Object} event - Event data
+   * @returns {Object}
+   * @private
+   */
+  _buildCalendarEvent(event) {
+    return {
+      title: event.title,
+      start: event.time,
+      location: `${Config.venue.name}, ${Config.venue.location}`,
+      description: `${Config.venue.currentEvent}\n${event.title}\nSeat: ${Format.seat(Config.venue.userSeat.section, Config.venue.userSeat.row, Config.venue.userSeat.seat)}`
+    };
+  },
+
+  /**
+   * Share an event via the Web Share API or clipboard
+   * @param {Object} event - Event to share
+   * @returns {Promise<void>}
+   * @private
+   */
+  async _shareEvent(event) {
+    const payload = this._buildCalendarEvent(event);
+    const link = CalendarService.getShareLink(payload);
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: event.title,
+          text: `${event.title} at ${Config.venue.name}`,
+          url: link
+        });
+        return;
+      } catch (error) {
+        // Fall back to clipboard copy if sharing is dismissed or unavailable.
+      }
+    }
+
+    const copied = await DOM.copyText(link);
+    DOM.toast(copied ? 'Event link copied to clipboard' : 'Unable to copy event link', copied ? 'success' : 'warning');
   },
 
   /**
    * Bind events
+   * @param {Element} container - View container
+   * @param {Object} primaryEvent - Main event for top actions
    * @private
    */
-  _bindEvents(container) {
-    // Sync all to calendar
-    const syncBtn = DOM.$('#btn-sync-calendar', container);
-    if (syncBtn) {
-      syncBtn.addEventListener('click', () => CalendarService.addAllToCalendar());
-    }
+  _bindEvents(container, primaryEvent) {
+    DOM.$('#btn-sync-calendar', container)?.addEventListener('click', () => {
+      CalendarService.addAllToCalendar();
+    });
 
-    // Add main event to calendar
-    const addMainBtn = DOM.$('#btn-add-main-event', container);
-    if (addMainBtn) {
-      addMainBtn.addEventListener('click', () => {
-        CalendarService.addToCalendar({
-          title: Config.venue.currentEvent,
-          start: Config.venue.eventTime,
-          location: `${Config.venue.name}, ${Config.venue.location}`
-        });
-      });
-    }
+    DOM.$('#btn-add-main-event', container)?.addEventListener('click', () => {
+      CalendarService.addToCalendar(this._buildCalendarEvent(primaryEvent));
+    });
 
-    // Individual calendar buttons
-    DOM.$$('[data-calendar-event]', container).forEach(btn => {
-      btn.addEventListener('click', () => {
-        const idx = parseInt(btn.dataset.calendarEvent);
-        const event = Config.schedule[idx];
+    DOM.$('#btn-download-main-event', container)?.addEventListener('click', () => {
+      CalendarService.downloadICS(this._buildCalendarEvent(primaryEvent));
+    });
+
+    DOM.$('#btn-share-main-event', container)?.addEventListener('click', () => {
+      this._shareEvent(primaryEvent);
+    });
+
+    DOM.$$('[data-calendar-event]', container).forEach(button => {
+      button.addEventListener('click', () => {
+        const event = this._getTimeline()[Number(button.dataset.calendarEvent)];
         if (event) {
-          CalendarService.addToCalendar({
-            title: event.title,
-            start: event.time,
-            location: `${Config.venue.name}, ${Config.venue.location}`
-          });
+          CalendarService.addToCalendar(this._buildCalendarEvent(event));
         }
       });
     });
 
-    // Share buttons
-    DOM.$$('[data-share-event]', container).forEach(btn => {
-      btn.addEventListener('click', () => {
-        const idx = parseInt(btn.dataset.shareEvent);
-        const event = Config.schedule[idx];
+    DOM.$$('[data-ics-event]', container).forEach(button => {
+      button.addEventListener('click', () => {
+        const event = this._getTimeline()[Number(button.dataset.icsEvent)];
         if (event) {
-          const link = CalendarService.getShareLink({
-            title: event.title,
-            start: event.time,
-            location: Config.venue.name
-          });
+          CalendarService.downloadICS(this._buildCalendarEvent(event));
+        }
+      });
+    });
 
-          if (navigator.share) {
-            navigator.share({
-              title: event.title,
-              text: `${event.title} at ${Config.venue.name}`,
-              url: link
-            }).catch(() => {});
-          } else {
-            navigator.clipboard.writeText(link).then(() => {
-              DOM.toast('📋 Link copied to clipboard!', 'success');
-            });
-          }
+    DOM.$$('[data-share-event]', container).forEach(button => {
+      button.addEventListener('click', () => {
+        const event = this._getTimeline()[Number(button.dataset.shareEvent)];
+        if (event) {
+          this._shareEvent(event);
         }
       });
     });
@@ -249,39 +333,42 @@ const EventsView = {
 
   /**
    * Start countdown timer
+   * @param {string} targetDate - Countdown target
    * @private
    */
-  _startCountdown() {
+  _startCountdown(targetDate) {
     if (this._countdownInterval) clearInterval(this._countdownInterval);
 
     this._countdownInterval = setInterval(() => {
-      const cd = Format.countdown(Config.venue.eventTime);
+      const countdown = Format.countdown(targetDate);
       const hours = DOM.$('#cd-hours');
       const minutes = DOM.$('#cd-minutes');
       const seconds = DOM.$('#cd-seconds');
 
-      if (hours) hours.textContent = cd.hours;
-      if (minutes) minutes.textContent = cd.minutes;
-      if (seconds) seconds.textContent = cd.seconds;
+      if (hours) hours.textContent = countdown.hours;
+      if (minutes) minutes.textContent = countdown.minutes;
+      if (seconds) seconds.textContent = countdown.seconds;
 
-      if (cd.expired) {
+      if (countdown.expired) {
         clearInterval(this._countdownInterval);
+        this._countdownInterval = null;
       }
     }, 1000);
   },
 
   /**
    * Random stadium fact
+   * @returns {string}
    * @private
    */
   _getRandomFact() {
     const facts = [
-      'MetLife Stadium can hold 82,500 fans and is the largest stadium in the NFL by seating capacity.',
-      'The stadium uses enough electricity during a game day to power 33,000 homes.',
-      'MetLife Stadium hosted Super Bowl XLVIII in 2014 — the first outdoor cold-weather Super Bowl.',
-      'Over 40,000 hot dogs are sold at MetLife Stadium during a typical game day.',
-      'The stadium has over 200,000 square feet of LED lighting.',
-      'MetLife has 218 luxury suites and 9,000 club seats.'
+      'Narendra Modi Stadium is the largest cricket stadium in the world, with room for more than 132,000 fans.',
+      'The stadium can switch between multiple pitch blocks, which helps it host back-to-back tournament fixtures.',
+      'Four team dressing rooms allow quicker event turnarounds during major tournaments and double-headers.',
+      'Its bowl layout was designed to keep sightlines clear even from the upper tiers during night matches.',
+      'The LED floodlights are mounted around the roofline, reducing glare for both batters and spectators.',
+      'Major IPL nights here can feel like a city-scale live event, with crowd management run across multiple gates and concourses.'
     ];
     return facts[Math.floor(Math.random() * facts.length)];
   },

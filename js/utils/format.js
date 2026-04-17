@@ -47,14 +47,14 @@ const Format = {
   /**
    * Format currency
    * @param {number} amount - Amount to format
-   * @param {string} [currency='USD'] - Currency code
+   * @param {string} [currency='INR'] - Currency code
    * @returns {string}
    */
-  currency(amount, currency = 'USD') {
-    return new Intl.NumberFormat('en-US', {
+  currency(amount, currency = 'INR') {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency,
-      minimumFractionDigits: 2
+      minimumFractionDigits: 0
     }).format(amount);
   },
 

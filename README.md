@@ -163,7 +163,8 @@ d:\physical event app\
 │   │   ├── concierge.js    # AI chatbot
 │   │   ├── order.js        # Food pre-order
 │   │   ├── events.js       # Event timeline
-│   │   └── emergency.js    # Emergency/safety
+│   │   ├── emergency.js    # Emergency/safety
+│   │   └── wallet.js       # Ticket wallet and payment methods
 │   ├── services/
 │   │   ├── maps.js         # Google Maps integration
 │   │   ├── gemini.js       # Gemini AI integration
@@ -214,6 +215,28 @@ npx http-server -p 8080
 
 Then open `http://localhost:8080` in your browser.
 
+### Optional Live Service Keys
+
+The repo now defaults to safe local fallbacks for Maps, Gemini, and Firebase. To enable live services, define runtime config before the app scripts load:
+
+```html
+<script>
+  window.__VENUEFLOW_RUNTIME__ = {
+    maps: { apiKey: 'YOUR_GOOGLE_MAPS_API_KEY' },
+    gemini: { apiKey: 'YOUR_GEMINI_API_KEY' },
+    firebase: {
+      apiKey: 'YOUR_FIREBASE_WEB_API_KEY',
+      authDomain: 'your-project.firebaseapp.com',
+      databaseURL: 'https://your-project-default-rtdb.firebaseio.com',
+      projectId: 'your-project',
+      storageBucket: 'your-project.firebasestorage.app',
+      messagingSenderId: '1234567890',
+      appId: '1:1234567890:web:abcdef'
+    }
+  };
+</script>
+```
+
 ### Running Tests
 
 Open `http://localhost:8080/tests/index.html` in your browser to run the test suite.
@@ -222,9 +245,9 @@ Open `http://localhost:8080/tests/index.html` in your browser to run the test su
 
 ## 📐 Assumptions
 
-1. **Venue Context** — The app is pre-configured for MetLife Stadium (NFL game day) as a demonstration. In production, this would be dynamically configured per venue
+1. **Venue Context** — The app is pre-configured for Narendra Modi Stadium (IPL match day) as a demonstration. In production, this would be dynamically configured per venue
 2. **Real-Time Data** — Queue and crowd data are simulated with realistic patterns. In production, this would integrate with venue IoT sensors and camera systems
-3. **API Keys** — Google API keys in the config are placeholders. Replace with your own keys for full functionality
+3. **API Keys** — Live Google and Firebase keys are injected at runtime through `window.__VENUEFLOW_RUNTIME__`; without them the app stays in fallback or simulated mode
 4. **Single User** — The app demonstrates the attendee experience from a single user's perspective (Section 134, Row H, Seat 12)
 5. **Offline Capability** — The service worker caches static assets; real-time features require network connectivity
 6. **Mobile Primary** — Designed primarily for mobile use at venues (480px max-width container)

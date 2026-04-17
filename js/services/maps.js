@@ -8,6 +8,9 @@ const MapsService = {
   /** @type {google.maps.Map|null} */
   map: null,
 
+  /** @type {Promise<boolean>|null} */
+  _sdkPromise: null,
+
   /** @type {google.maps.visualization.HeatmapLayer|null} */
   heatmapLayer: null,
 
@@ -23,16 +26,61 @@ const MapsService = {
   /** @type {google.maps.InfoWindow|null} */
   activeInfoWindow: null,
 
+  /** @type {boolean} */
+  heatmapVisible: true,
+
+  /** @type {Function|null} */
+  _crowdUnsubscribe: null,
+
+  /**
+   * Lazily load Google Maps when a runtime API key is available
+   * @returns {Promise<boolean>}
+   */
+  loadGoogleMaps() {
+    if (typeof google !== 'undefined' && google.maps) {
+      return Promise.resolve(true);
+    }
+
+    if (!Config.maps.apiKey) {
+      return Promise.resolve(false);
+    }
+
+    if (this._sdkPromise) {
+      return this._sdkPromise;
+    }
+
+    this._sdkPromise = new Promise(resolve => {
+      const existing = document.querySelector('script[data-google-maps-sdk="true"]');
+      if (existing) {
+        existing.addEventListener('load', () => resolve(typeof google !== 'undefined' && !!google.maps), { once: true });
+        existing.addEventListener('error', () => resolve(false), { once: true });
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(Config.maps.apiKey)}&libraries=visualization,places`;
+      script.async = true;
+      script.defer = true;
+      script.dataset.googleMapsSdk = 'true';
+      script.addEventListener('load', () => resolve(typeof google !== 'undefined' && !!google.maps), { once: true });
+      script.addEventListener('error', () => resolve(false), { once: true });
+      document.head.appendChild(script);
+    });
+
+    return this._sdkPromise;
+  },
+
   /**
    * Initialize Google Maps
    * @param {string} containerId - Map container element ID
    */
-  init(containerId) {
+  async init(containerId) {
     const container = DOM.$(containerId);
     if (!container) return;
 
     try {
-      if (typeof google === 'undefined' || !google.maps) {
+      const sdkLoaded = await this.loadGoogleMaps();
+      if (!sdkLoaded || typeof google === 'undefined' || !google.maps) {
         this._renderFallbackMap(container);
         return;
       }
@@ -46,6 +94,9 @@ const MapsService = {
         gestureHandling: 'greedy',
         styles: this._getMapStyles()
       });
+
+      this.markers = [];
+      this.activeInfoWindow = null;
 
       // Initialize heatmap
       this._initHeatmap();
@@ -64,11 +115,13 @@ const MapsService = {
         }
       });
 
+      this.heatmapVisible = true;
       this.initialized = true;
       console.log('✅ Google Maps initialized');
 
       // Subscribe to crowd zone updates
-      AppState.subscribe('crowdZones', (zones) => this._updateHeatmap(zones));
+      if (this._crowdUnsubscribe) this._crowdUnsubscribe();
+      this._crowdUnsubscribe = AppState.subscribe('crowdZones', (zones) => this._updateHeatmap(zones));
 
     } catch (error) {
       console.warn('⚠️ Google Maps init failed:', error.message);
@@ -194,10 +247,7 @@ const MapsService = {
     if (!this.map || !google.maps) return;
 
     const directionsService = new google.maps.DirectionsService();
-    
-    // Use user's section as start point
-    const userSection = Config.pois.find(p => p.id === 'gate-a'); // approximate
-    
+
     directionsService.route({
       origin: new google.maps.LatLng(Config.maps.defaultCenter.lat, Config.maps.defaultCenter.lng),
       destination: new google.maps.LatLng(destLat, destLng),
@@ -221,7 +271,7 @@ const MapsService = {
    */
   clearNavigation() {
     if (this.directionsRenderer) {
-      this.directionsRenderer.setDirections({ routes: [] });
+      this.directionsRenderer.set('directions', null);
     }
   },
 
@@ -242,9 +292,23 @@ const MapsService = {
    * @param {boolean} visible
    */
   toggleHeatmap(visible) {
+    this.heatmapVisible = visible;
     if (this.heatmapLayer) {
       this.heatmapLayer.setMap(visible ? this.map : null);
     }
+  },
+
+  /**
+   * Focus the map on a specific location
+   * @param {number} lat - Latitude
+   * @param {number} lng - Longitude
+   * @param {number} [zoom=18] - Target zoom level
+   */
+  focusOn(lat, lng, zoom = 18) {
+    if (!this.map) return;
+
+    this.map.panTo({ lat, lng });
+    this.map.setZoom(zoom);
   },
 
   /**

@@ -5,6 +5,8 @@
 const QueueView = {
   _activeTab: 'all',
   _trendChart: null,
+  _unsubscribeFns: [],
+  _chartInitTimer: null,
 
   render() {
     const container = DOM.$('#view-queue');
@@ -87,7 +89,8 @@ const QueueView = {
 
     this._bindEvents(container);
     // Delay chart init to ensure canvas has layout dimensions after view animation
-    setTimeout(() => requestAnimationFrame(() => this._initTrendChart()), 100);
+    if (this._chartInitTimer) clearTimeout(this._chartInitTimer);
+    this._chartInitTimer = setTimeout(() => requestAnimationFrame(() => this._initTrendChart()), 100);
     this._subscribeToUpdates();
   },
 
@@ -217,10 +220,14 @@ const QueueView = {
   },
 
   _bindEvents(container) {
-    DOM.$$('.chip[data-tab]', container).forEach(chip => {
+    DOM.$$('[data-tab]', container).forEach(chip => {
       chip.addEventListener('click', () => {
-        DOM.$$('.chip[data-tab]', container).forEach(c => c.classList.remove('chip-active'));
-        chip.classList.add('chip-active');
+        DOM.$$('[data-tab]', container).forEach(c => {
+          c.classList.remove('bg-primary', 'text-black', 'border-primary/50');
+          c.classList.add('bg-zinc-900', 'border-white/10', 'text-zinc-400');
+        });
+        chip.classList.remove('bg-zinc-900', 'border-white/10', 'text-zinc-400');
+        chip.classList.add('bg-primary', 'text-black', 'border-primary/50');
         this._activeTab = chip.dataset.tab;
         DOM.$('#queue-list', container).innerHTML = this._renderQueueList(AppState.get('queues'));
       });
@@ -228,24 +235,43 @@ const QueueView = {
   },
 
   _subscribeToUpdates() {
-    AppState.subscribe('queues', (queues) => {
-      const list = DOM.$('#queue-list');
-      if (list) list.innerHTML = this._renderQueueList(queues);
-      
-      const s = DOM.$('#queue-shortest'), a = DOM.$('#queue-average'), l = DOM.$('#queue-longest');
-      if (s) s.textContent = `${Math.min(...queues.map(q => q.waitMinutes))}m`;
-      if (a) a.textContent = `${Math.round(queues.reduce((s,q) => s + q.waitMinutes, 0) / queues.length)}m`;
-      if (l) l.textContent = `${Math.max(...queues.map(q => q.waitMinutes))}m`;
+    this._unsubscribeFns.forEach(unsubscribe => unsubscribe());
+    this._unsubscribeFns = [
+      AppState.subscribe('queues', (queues) => {
+        const list = DOM.$('#queue-list');
+        if (list) list.innerHTML = this._renderQueueList(queues);
 
-      if (this._trendChart) {
-        const avgF = Math.round(queues.filter(q => q.type === 'food').reduce((s,q) => s + q.waitMinutes, 0) / queues.filter(q => q.type === 'food').length);
-        const avgR = Math.round(queues.filter(q => q.type === 'restroom').reduce((s,q) => s + q.waitMinutes, 0) / queues.filter(q => q.type === 'restroom').length);
-        const avgG = Math.round(queues.filter(q => q.type === 'gate').reduce((s,q) => s + q.waitMinutes, 0) / queues.filter(q => q.type === 'gate').length);
-        [avgF, avgR, avgG].forEach((v, i) => { this._trendChart.data.datasets[i].data.push(v); this._trendChart.data.datasets[i].data.shift(); });
-        this._trendChart.update('none');
-      }
-    });
+        const s = DOM.$('#queue-shortest'), a = DOM.$('#queue-average'), l = DOM.$('#queue-longest');
+        if (s) s.textContent = `${Math.min(...queues.map(q => q.waitMinutes))}m`;
+        if (a) a.textContent = `${Math.round(queues.reduce((sum, queue) => sum + queue.waitMinutes, 0) / queues.length)}m`;
+        if (l) l.textContent = `${Math.max(...queues.map(q => q.waitMinutes))}m`;
+
+        if (this._trendChart) {
+          const avgF = Math.round(queues.filter(q => q.type === 'food').reduce((sum, queue) => sum + queue.waitMinutes, 0) / queues.filter(q => q.type === 'food').length);
+          const avgR = Math.round(queues.filter(q => q.type === 'restroom').reduce((sum, queue) => sum + queue.waitMinutes, 0) / queues.filter(q => q.type === 'restroom').length);
+          const avgG = Math.round(queues.filter(q => q.type === 'gate').reduce((sum, queue) => sum + queue.waitMinutes, 0) / queues.filter(q => q.type === 'gate').length);
+          [avgF, avgR, avgG].forEach((value, index) => {
+            this._trendChart.data.datasets[index].data.push(value);
+            this._trendChart.data.datasets[index].data.shift();
+          });
+          this._trendChart.update('none');
+        }
+      })
+    ];
   },
 
-  destroy() { if (this._trendChart) { this._trendChart.destroy(); this._trendChart = null; } }
+  destroy() {
+    if (this._chartInitTimer) {
+      clearTimeout(this._chartInitTimer);
+      this._chartInitTimer = null;
+    }
+
+    if (this._trendChart) {
+      this._trendChart.destroy();
+      this._trendChart = null;
+    }
+
+    this._unsubscribeFns.forEach(unsubscribe => unsubscribe());
+    this._unsubscribeFns = [];
+  }
 };

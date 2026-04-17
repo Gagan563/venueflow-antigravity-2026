@@ -5,6 +5,17 @@
 
 const DOM = {
   /**
+   * Escape HTML special characters for safe injection
+   * @param {string} text - Text to escape
+   * @returns {string}
+   */
+  escapeHTML(text = '') {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  },
+
+  /**
    * Select a single element
    * @param {string} selector - CSS selector
    * @param {Element} [parent=document] - Parent element
@@ -125,6 +136,44 @@ const DOM = {
       toast.classList.remove('show');
       setTimeout(() => toast.remove(), 400);
     }, duration);
+  },
+
+  /**
+   * Copy text to the clipboard with a textarea fallback
+   * @param {string} text - Text to copy
+   * @returns {Promise<boolean>}
+   */
+  async copyText(text) {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (error) {
+      // Fall through to the legacy copy path below.
+    }
+
+    const textarea = this.create('textarea', {
+      style: {
+        position: 'fixed',
+        opacity: '0',
+        pointerEvents: 'none'
+      }
+    }, text);
+
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    let copied = false;
+    try {
+      copied = document.execCommand('copy');
+    } catch (error) {
+      copied = false;
+    }
+
+    textarea.remove();
+    return copied;
   },
 
   /**

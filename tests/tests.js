@@ -124,8 +124,8 @@ TestRunner.suite('Format Utilities', () => {
   TestRunner.assertEqual(Format.waitTime(60), '1h', 'waitTime: exactly 1 hour');
 
   // currency
-  TestRunner.assertEqual(Format.currency(12.99), '$12.99', 'currency: $12.99');
-  TestRunner.assertEqual(Format.currency(0), '$0.00', 'currency: zero');
+  TestRunner.assertEqual(Format.currency(99), '₹99', 'currency: ₹99');
+  TestRunner.assertEqual(Format.currency(0), '₹0', 'currency: zero');
 
   // compactNumber
   TestRunner.assertEqual(Format.compactNumber(500), '500', 'compactNumber: < 1K');
@@ -197,21 +197,21 @@ TestRunner.suite('State Management', () => {
   TestRunner.assertFalse(subscriberCalled, 'state: unsubscribe works');
 
   // Cart operations
-  const testItem = { id: '_test_item', name: 'Test Burger', price: 10.00, emoji: '🍔', prepTime: 5 };
+  const testItem = { id: '_test_item', name: 'Test Samosa', price: 79, emoji: '🥟', prepTime: 3 };
   
   // Clear cart first
   AppState.set('cart', []);
   AppState.addToCart(testItem);
   TestRunner.assertEqual(AppState.getCartCount(), 1, 'cart: add item count');
-  TestRunner.assertEqual(AppState.getCartTotal(), 10.00, 'cart: total after add');
+  TestRunner.assertEqual(AppState.getCartTotal(), 79, 'cart: total after add');
 
   AppState.addToCart(testItem);
   TestRunner.assertEqual(AppState.getCartCount(), 2, 'cart: add same item increases quantity');
-  TestRunner.assertEqual(AppState.getCartTotal(), 20.00, 'cart: total after double');
+  TestRunner.assertEqual(AppState.getCartTotal(), 158, 'cart: total after double');
 
   AppState.updateCartQuantity('_test_item', 5);
   TestRunner.assertEqual(AppState.getCartCount(), 5, 'cart: update quantity');
-  TestRunner.assertEqual(AppState.getCartTotal(), 50.00, 'cart: total after quantity update');
+  TestRunner.assertEqual(AppState.getCartTotal(), 395, 'cart: total after quantity update');
 
   AppState.removeFromCart('_test_item');
   TestRunner.assertEqual(AppState.getCartCount(), 0, 'cart: remove item');
@@ -223,6 +223,25 @@ TestRunner.suite('State Management', () => {
   TestRunner.assertEqual(AppState.get('_test_merge').a, 1, 'state: merge preserves existing');
   TestRunner.assertEqual(AppState.get('_test_merge').b, 3, 'state: merge overwrites');
   TestRunner.assertEqual(AppState.get('_test_merge').c, 4, 'state: merge adds new');
+
+  // Wallet methods
+  AppState.set('wallet.paymentMethods', [
+    { id: 'pm-test-1', brand: 'VISA', label: 'Primary', last4: '1111', expMonth: '08', expYear: '29', default: true }
+  ]);
+  AppState.addPaymentMethod({ brand: 'AMEX', label: 'Backup', last4: '2222', expMonth: '09', expYear: '30', default: true });
+  TestRunner.assertEqual(AppState.get('wallet.paymentMethods').length, 2, 'wallet: add payment method');
+  TestRunner.assertEqual(AppState.getDefaultPaymentMethod().brand, 'AMEX', 'wallet: new default payment method set');
+
+  AppState.setDefaultPaymentMethod('pm-test-1');
+  TestRunner.assertEqual(AppState.getDefaultPaymentMethod().id, 'pm-test-1', 'wallet: set default payment method');
+
+  // Notifications helpers
+  AppState.set('notifications', [
+    { id: 'n-test-1', read: false, title: 'A', message: 'A', time: Date.now() },
+    { id: 'n-test-2', read: false, title: 'B', message: 'B', time: Date.now() }
+  ]);
+  AppState.markAllNotificationsRead();
+  TestRunner.assertTrue(AppState.get('notifications').every(n => n.read), 'notifications: mark all read');
 });
 
 // ── DOM Utilities ──
@@ -247,6 +266,9 @@ TestRunner.suite('DOM Utilities', () => {
   // skeleton
   const skeleton = DOM.skeleton(3);
   TestRunner.assertTrue(skeleton.includes('skeleton-text'), 'skeleton: contains skeleton class');
+
+  // escapeHTML
+  TestRunner.assertEqual(DOM.escapeHTML('<script>alert(1)</script>'), '&lt;script&gt;alert(1)&lt;/script&gt;', 'DOM.escapeHTML: escapes HTML');
 
   // $ selector
   document.body.appendChild(el);
@@ -284,6 +306,7 @@ TestRunner.suite('Configuration', () => {
   // Gemini config
   TestRunner.assertType(Config.gemini.systemPrompt, 'string', 'config: Gemini system prompt exists');
   TestRunner.assertTrue(Config.gemini.systemPrompt.length > 50, 'config: Gemini prompt is detailed');
+  TestRunner.assertType(GeminiService.isConfigured(), 'boolean', 'gemini: configuration flag is boolean');
 
   // Maps
   TestRunner.assertType(Config.maps.defaultCenter.lat, 'number', 'config: maps center lat is number');
@@ -320,7 +343,7 @@ TestRunner.suite('Gemini AI Service', () => {
   // Fallback responses
   const foodResponse = GeminiService._getFallbackResponse('Where can I get food?');
   TestRunner.assertTrue(foodResponse.length > 0, 'gemini: food query returns response');
-  TestRunner.assertTrue(foodResponse.includes('Grill') || foodResponse.includes('food') || foodResponse.includes('queue'), 'gemini: food response is relevant');
+  TestRunner.assertTrue(foodResponse.includes('Dhaba') || foodResponse.includes('food') || foodResponse.includes('queue'), 'gemini: food response is relevant');
 
   const restroomResponse = GeminiService._getFallbackResponse('Where is the nearest bathroom?');
   TestRunner.assertTrue(restroomResponse.includes('Restroom') || restroomResponse.includes('restroom'), 'gemini: restroom response is relevant');
@@ -332,7 +355,7 @@ TestRunner.suite('Gemini AI Service', () => {
   TestRunner.assertTrue(helpResponse.includes('Navigate') || helpResponse.includes('help'), 'gemini: help response lists features');
 
   const emergencyResponse = GeminiService._getFallbackResponse('I need medical help!');
-  TestRunner.assertTrue(emergencyResponse.includes('911') || emergencyResponse.includes('emergency') || emergencyResponse.includes('Emergency'), 'gemini: emergency response has contacts');
+  TestRunner.assertTrue(emergencyResponse.includes('112') || emergencyResponse.includes('emergency') || emergencyResponse.includes('Emergency'), 'gemini: emergency response has contacts');
 
   // Suggestions
   const suggestions = GeminiService.getSuggestions();

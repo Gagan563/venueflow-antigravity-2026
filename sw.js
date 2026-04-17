@@ -28,6 +28,7 @@ const STATIC_ASSETS = [
   '/js/views/order.js',
   '/js/views/events.js',
   '/js/views/emergency.js',
+  '/js/views/wallet.js',
   '/js/router.js',
   '/js/app.js',
   '/manifest.json'

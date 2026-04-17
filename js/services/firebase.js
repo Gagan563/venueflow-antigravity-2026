@@ -20,15 +20,55 @@ const FirebaseService = {
   /** @type {Array} Active listeners for cleanup */
   _listeners: [],
 
+  /** @type {number[]} Active simulation/server interval IDs */
+  _intervals: [],
+
+  /** @type {number|null} Timeout used before falling back to simulation */
+  _connectionTimeoutId: null,
+
+  /** @type {boolean} Whether live Firebase mode is active */
+  _liveModeReady: false,
+
+  /**
+   * Check whether the runtime has a usable Firebase configuration
+   * @returns {boolean}
+   */
+  _hasLiveConfig() {
+    return Boolean(Config.firebase.apiKey && Config.firebase.databaseURL && Config.firebase.projectId);
+  },
+
   /**
    * Initialize Firebase
    * Falls back to simulated mode if Firebase is unavailable
    */
   init() {
     try {
+      if (!this._hasLiveConfig()) {
+        this._initSimulated();
+        return;
+      }
+
       if (typeof firebase !== 'undefined' && firebase.initializeApp) {
-        this.app = firebase.initializeApp(Config.firebase);
+        this.app = firebase.apps && firebase.apps.length
+          ? firebase.app()
+          : firebase.initializeApp(Config.firebase);
         this.db = firebase.database();
+
+        const connectionRef = this.db.ref('.info/connected');
+        connectionRef.on('value', (snap) => {
+          if (snap.val() === true) {
+            this._activateLiveMode();
+            return;
+          }
+
+          if (!this._liveModeReady) {
+            console.log('Waiting for Firebase connection...');
+          }
+        });
+        this._listeners.push({ ref: connectionRef, event: 'value' });
+        this._startConnectionFallbackTimer();
+        this.initialized = true;
+        return;
         
         // Test connection with a read
         this.db.ref('.info/connected').on('value', (snap) => {
@@ -52,6 +92,48 @@ const FirebaseService = {
       console.warn('⚠️ Firebase init failed, using simulated mode:', error.message);
       this._initSimulated();
     }
+  },
+
+  /**
+   * Start the timeout used before simulated mode is enabled
+   * @private
+   */
+  _startConnectionFallbackTimer() {
+    this._clearConnectionFallbackTimer();
+    this._connectionTimeoutId = setTimeout(() => {
+      if (!this._liveModeReady) {
+        console.warn('Firebase connection timed out, using simulated mode');
+        this._initSimulated();
+      }
+    }, 4000);
+  },
+
+  /**
+   * Clear the pending connection timeout
+   * @private
+   */
+  _clearConnectionFallbackTimer() {
+    if (this._connectionTimeoutId) {
+      clearTimeout(this._connectionTimeoutId);
+      this._connectionTimeoutId = null;
+    }
+  },
+
+  /**
+   * Switch from simulated data to live Firebase listeners
+   * @private
+   */
+  _activateLiveMode() {
+    if (this._liveModeReady) return;
+
+    this._clearConnectionFallbackTimer();
+    this._liveModeReady = true;
+    this.simulatedMode = false;
+    AppState.stopSimulation();
+
+    console.log('Firebase connected (live)');
+    this._seedDatabaseIfEmpty();
+    this._setupListeners();
   },
 
   /**
@@ -110,7 +192,7 @@ const FirebaseService = {
     if (!this.db) return;
 
     // Update queue data every 10 seconds
-    setInterval(async () => {
+    const queueInterval = setInterval(async () => {
       try {
         const snapshot = await this.db.ref('queues').once('value');
         const queues = snapshot.val();
@@ -134,9 +216,10 @@ const FirebaseService = {
         await this.db.ref('queues').update(updates);
       } catch (e) { /* silent */ }
     }, 10000);
+    this._intervals.push(queueInterval);
 
     // Update crowd data every 30 seconds
-    setInterval(async () => {
+    const crowdInterval = setInterval(async () => {
       try {
         const snapshot = await this.db.ref('crowd').once('value');
         const crowd = snapshot.val();
@@ -152,6 +235,7 @@ const FirebaseService = {
         });
       } catch (e) { /* silent */ }
     }, 30000);
+    this._intervals.push(crowdInterval);
   },
 
   /**
@@ -159,6 +243,8 @@ const FirebaseService = {
    * @private
    */
   _initSimulated() {
+    this._clearConnectionFallbackTimer();
+    this._liveModeReady = false;
     this.simulatedMode = true;
     this.initialized = true;
     console.log('📡 Using simulated real-time data');
@@ -372,6 +458,7 @@ const FirebaseService = {
     const badge = DOM.$('#notif-count');
     if (badge) {
       badge.textContent = unread;
+      badge.classList.toggle('hidden', unread === 0);
       badge.style.display = unread > 0 ? 'flex' : 'none';
     }
 
@@ -399,5 +486,10 @@ const FirebaseService = {
       ref.off(event);
     });
     this._listeners = [];
+    this._clearConnectionFallbackTimer();
+    this._liveModeReady = false;
+    this._intervals.forEach(interval => clearInterval(interval));
+    this._intervals = [];
+    AppState.stopSimulation();
   }
 };

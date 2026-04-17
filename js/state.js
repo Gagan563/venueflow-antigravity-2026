@@ -16,11 +16,11 @@ const AppState = {
 
     // Queue data (real-time)
     queues: [
-      { id: 'food-1', name: 'Gridiron Grill', type: 'food', waitMinutes: 12, trend: 'rising', capacity: 85, icon: '🍔' },
-      { id: 'food-2', name: 'Stadium Sushi', type: 'food', waitMinutes: 8, trend: 'stable', capacity: 60, icon: '🍣' },
-      { id: 'food-3', name: 'Pizza Corner', type: 'food', waitMinutes: 18, trend: 'rising', capacity: 92, icon: '🍕' },
-      { id: 'food-4', name: 'Taco Stand', type: 'food', waitMinutes: 5, trend: 'falling', capacity: 40, icon: '🌮' },
-      { id: 'food-5', name: 'Beer Garden', type: 'food', waitMinutes: 15, trend: 'rising', capacity: 78, icon: '🍺' },
+      { id: 'food-1', name: 'Desi Dhaba', type: 'food', waitMinutes: 12, trend: 'rising', capacity: 85, icon: '🍛' },
+      { id: 'food-2', name: 'Chaat Corner', type: 'food', waitMinutes: 8, trend: 'stable', capacity: 60, icon: '🥘' },
+      { id: 'food-3', name: 'Pizza Point', type: 'food', waitMinutes: 18, trend: 'rising', capacity: 92, icon: '🍕' },
+      { id: 'food-4', name: 'Biryani House', type: 'food', waitMinutes: 5, trend: 'falling', capacity: 40, icon: '🍚' },
+      { id: 'food-5', name: 'Lassi Bar', type: 'food', waitMinutes: 15, trend: 'rising', capacity: 78, icon: '🥛' },
       { id: 'rest-1', name: 'Restrooms (Sec 110)', type: 'restroom', waitMinutes: 7, trend: 'stable', capacity: 65, icon: '🚻' },
       { id: 'rest-2', name: 'Restrooms (Sec 130)', type: 'restroom', waitMinutes: 3, trend: 'falling', capacity: 30, icon: '🚻' },
       { id: 'rest-3', name: 'Restrooms (Sec 220)', type: 'restroom', waitMinutes: 10, trend: 'rising', capacity: 75, icon: '🚻' },
@@ -33,19 +33,19 @@ const AppState = {
 
     // Crowd zones for heatmap
     crowdZones: [
-      { lat: 40.8140, lng: -74.0755, weight: 85 },
-      { lat: 40.8142, lng: -74.0748, weight: 72 },
-      { lat: 40.8138, lng: -74.0740, weight: 90 },
-      { lat: 40.8135, lng: -74.0735, weight: 65 },
-      { lat: 40.8130, lng: -74.0738, weight: 78 },
-      { lat: 40.8128, lng: -74.0745, weight: 55 },
-      { lat: 40.8132, lng: -74.0752, weight: 60 },
-      { lat: 40.8145, lng: -74.0742, weight: 88 },
-      { lat: 40.8148, lng: -74.0750, weight: 70 },
-      { lat: 40.8125, lng: -74.0755, weight: 45 },
-      { lat: 40.8133, lng: -74.0760, weight: 50 },
-      { lat: 40.8138, lng: -74.0728, weight: 95 },
-      { lat: 40.8143, lng: -74.0733, weight: 82 }
+      { lat: 23.0930, lng: 72.5970, weight: 85 },
+      { lat: 23.0932, lng: 72.5978, weight: 72 },
+      { lat: 23.0928, lng: 72.5982, weight: 90 },
+      { lat: 23.0925, lng: 72.5985, weight: 65 },
+      { lat: 23.0920, lng: 72.5980, weight: 78 },
+      { lat: 23.0918, lng: 72.5974, weight: 55 },
+      { lat: 23.0922, lng: 72.5968, weight: 60 },
+      { lat: 23.0935, lng: 72.5975, weight: 88 },
+      { lat: 23.0938, lng: 72.5970, weight: 70 },
+      { lat: 23.0916, lng: 72.5965, weight: 45 },
+      { lat: 23.0924, lng: 72.5962, weight: 50 },
+      { lat: 23.0928, lng: 72.5988, weight: 95 },
+      { lat: 23.0934, lng: 72.5982, weight: 82 }
     ],
 
     // Orders
@@ -53,22 +53,40 @@ const AppState = {
     activeOrders: [],
     orderHistory: [],
 
+    // Wallet
+    wallet: {
+      paymentMethods: [
+        {
+          id: 'pm-1',
+          brand: 'VISA',
+          label: 'Personal Node 01',
+          last4: '4421',
+          expMonth: '08',
+          expYear: '29',
+          default: true
+        }
+      ],
+      listings: []
+    },
+
     // Concierge
     chatHistory: [],
     isChatLoading: false,
 
     // Notifications
     notifications: [
-      { id: 'n1', title: 'Welcome!', message: 'Gates are now open. Enjoy the game! 🏈', time: Date.now() - 3600000, read: false, type: 'info' },
-      { id: 'n2', title: 'Low Wait Alert', message: 'Taco Stand has only 5 min wait right now 🌮', time: Date.now() - 900000, read: false, type: 'tip' },
-      { id: 'n3', title: 'Pre-Game Starting', message: 'The pre-game show begins at your section in 30 min', time: Date.now() - 600000, read: false, type: 'event' }
+      { id: 'n1', title: 'Welcome!', message: 'Enjoy the match at Narendra Modi Stadium! 🏏', time: Date.now() - 300000, read: false, type: 'info' },
+      { id: 'n2', title: 'Low Wait Alert', message: 'Biryani House has only 5 min wait right now 🍚', time: Date.now() - 900000, read: false, type: 'tip' },
+      { id: 'n3', title: 'Gate Update', message: 'Gate A is the fastest entry point currently', time: Date.now() - 1800000, read: true, type: 'info' }
     ],
 
     // User preferences
     preferences: {
       favoriteVendors: [],
       dietaryRestrictions: [],
-      notificationsEnabled: true
+      notificationsEnabled: true,
+      soundEnabled: true,
+      autoRefresh: true
     }
   },
 
@@ -77,6 +95,9 @@ const AppState = {
 
   /** @private Global listeners */
   _globalSubscribers: [],
+
+  /** @private Active simulation interval IDs */
+  _simulationIntervals: [],
 
   /**
    * Get current state value
@@ -156,6 +177,91 @@ const AppState = {
     } else {
       this.set(key, partial);
     }
+  },
+
+  /**
+   * Update user preferences
+   * @param {Object} partial - Partial preference update
+   */
+  updatePreferences(partial) {
+    this.merge('preferences', partial);
+  },
+
+  /**
+   * Mark every notification as read
+   */
+  markAllNotificationsRead() {
+    const notifications = this.get('notifications').map(notification => ({
+      ...notification,
+      read: true
+    }));
+    this.set('notifications', notifications);
+  },
+
+  /**
+   * Add a payment method to the wallet
+   * @param {Object} paymentMethod - Payment method details
+   * @returns {Object}
+   */
+  addPaymentMethod(paymentMethod) {
+    const methods = [...this.get('wallet.paymentMethods')];
+    const shouldBeDefault = paymentMethod.default || methods.length === 0;
+
+    const nextMethods = methods.map(method => ({
+      ...method,
+      default: shouldBeDefault ? false : method.default
+    }));
+
+    const createdMethod = {
+      id: paymentMethod.id || `pm-${Date.now().toString(36)}`,
+      brand: (paymentMethod.brand || 'CARD').toUpperCase(),
+      label: paymentMethod.label || 'VenueFlow Wallet',
+      last4: String(paymentMethod.last4 || '').slice(-4),
+      expMonth: String(paymentMethod.expMonth || '').padStart(2, '0'),
+      expYear: String(paymentMethod.expYear || '').slice(-2),
+      default: shouldBeDefault
+    };
+
+    nextMethods.push(createdMethod);
+    this.set('wallet.paymentMethods', nextMethods);
+    return createdMethod;
+  },
+
+  /**
+   * Set the default wallet payment method
+   * @param {string} paymentMethodId - Payment method ID
+   */
+  setDefaultPaymentMethod(paymentMethodId) {
+    const methods = this.get('wallet.paymentMethods').map(method => ({
+      ...method,
+      default: method.id === paymentMethodId
+    }));
+    this.set('wallet.paymentMethods', methods);
+  },
+
+  /**
+   * Get the default payment method
+   * @returns {Object|null}
+   */
+  getDefaultPaymentMethod() {
+    return this.get('wallet.paymentMethods').find(method => method.default) || null;
+  },
+
+  /**
+   * Add a new ticket marketplace listing
+   * @param {Object} listing - Listing details
+   * @returns {Object}
+   */
+  addTicketListing(listing) {
+    const createdListing = {
+      id: listing.id || `list-${Date.now().toString(36)}`,
+      createdAt: listing.createdAt || Date.now(),
+      status: listing.status || 'listed',
+      ...listing
+    };
+
+    this.set('wallet.listings', [createdListing, ...this.get('wallet.listings')]);
+    return createdListing;
   },
 
   // ── Cart Operations ──
@@ -293,8 +399,10 @@ const AppState = {
    * Start real-time simulation of crowd and queue data
    */
   startSimulation() {
+    if (this._simulationIntervals.length > 0) return;
+
     // Simulate queue updates every 10 seconds
-    setInterval(() => {
+    const queueInterval = setInterval(() => {
       const queues = this.get('queues').map(q => {
         const change = (Math.random() - 0.45) * 4; // slight bias towards increasing
         const newWait = Math.max(1, Math.min(30, q.waitMinutes + change));
@@ -308,23 +416,34 @@ const AppState = {
       });
       this.set('queues', queues);
     }, 10000);
+    this._simulationIntervals.push(queueInterval);
 
     // Simulate attendance changes every 30 seconds
-    setInterval(() => {
+    const attendanceInterval = setInterval(() => {
       const current = this.get('currentAttendance');
       const change = Math.floor((Math.random() - 0.3) * 500);
       const newAttendance = Math.max(50000, Math.min(Config.venue.capacity, current + change));
       this.set('currentAttendance', newAttendance);
       this.set('overallCrowdDensity', Math.round((newAttendance / Config.venue.capacity) * 100));
     }, 30000);
+    this._simulationIntervals.push(attendanceInterval);
 
     // Simulate crowd zone shifts every 15 seconds
-    setInterval(() => {
+    const crowdInterval = setInterval(() => {
       const zones = this.get('crowdZones').map(z => ({
         ...z,
         weight: Math.max(20, Math.min(100, z.weight + (Math.random() - 0.5) * 15))
       }));
       this.set('crowdZones', zones);
     }, 15000);
+    this._simulationIntervals.push(crowdInterval);
+  },
+
+  /**
+   * Stop simulated real-time updates
+   */
+  stopSimulation() {
+    this._simulationIntervals.forEach(interval => clearInterval(interval));
+    this._simulationIntervals = [];
   }
 };
