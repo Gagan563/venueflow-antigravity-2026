@@ -2,31 +2,31 @@
   "rules": {
     "queues": {
       ".read": true,
-      ".write": true
+      ".write": false
     },
     "crowd": {
       ".read": true,
-      ".write": true
+      ".write": false
     },
     "orders": {
-      ".read": true,
-      ".write": true
+      ".read": false,
+      ".write": false
     },
     "notifications": {
-      ".read": true,
-      ".write": true
+      ".read": false,
+      ".write": false
     },
     "sos-alerts": {
-      ".read": true,
-      ".write": true
+      ".read": false,
+      ".write": false
     },
     "reports": {
-      ".read": true,
-      ".write": true
+      ".read": false,
+      ".write": false
     },
     "venue": {
       ".read": true,
-      ".write": true
+      ".write": false
     }
   }
 }

@@ -42,7 +42,7 @@ Guidelines:
 
   // ── Firebase ──
   firebase: {
-    apiKey: runtimeFirebase.apiKey || 'AIzaSyAiENvPHGkaBiYlXCaLTF7NOvdMotIxhoQ',
+    apiKey: runtimeFirebase.apiKey || '',
     authDomain: runtimeFirebase.authDomain || 'physical-event-app.firebaseapp.com',
     databaseURL: runtimeFirebase.databaseURL || 'https://physical-event-app-default-rtdb.firebaseio.com',
     projectId: runtimeFirebase.projectId || 'physical-event-app',
