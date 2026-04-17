@@ -1,0 +1,11 @@
+{
+  "name": "venueflow",
+  "version": "1.0.0",
+  "description": "VenueFlow — Smart Stadium Experience Platform",
+  "private": true,
+  "scripts": {
+    "dev": "npx http-server -p 8080 -c-1 --cors -o",
+    "start": "npx http-server -p 8080 -c-1 --cors",
+    "deploy": "firebase deploy"
+  }
+}

@@ -68,23 +68,6 @@ const FirebaseService = {
         this._listeners.push({ ref: connectionRef, event: 'value' });
         this._startConnectionFallbackTimer();
         this.initialized = true;
-        return;
-        
-        // Test connection with a read
-        this.db.ref('.info/connected').on('value', (snap) => {
-          if (snap.val() === true) {
-            console.log('✅ Firebase connected (live)');
-            this.simulatedMode = false;
-            this._seedDatabaseIfEmpty();
-            this._setupListeners();
-          } else {
-            console.log('📡 Firebase offline — using simulation');
-            if (!this.simulatedMode) return;
-            this._initSimulated();
-          }
-        });
-
-        this.initialized = true;
       } else {
         this._initSimulated();
       }

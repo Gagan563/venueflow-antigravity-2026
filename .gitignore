@@ -2,3 +2,6 @@
 firebase-debug.log
 http-server.err
 http-server.out
+node_modules/
+package-lock.json
+*.log
